@@ -7,17 +7,19 @@ const countrySchema = require('../models/country.models')
 router.post('/state', async (req, res) => {
   try {
     const { stateName, countryId } = req.body;
+    const  isActive  = true;
+
     const stateExist = await stateSchema.findOne({ stateName: (stateName) })
     if (stateExist) {
-      res.json({ statusCode: 401, message: "item already exist" });
+      res.json({ statusCode: 401, message: "State already exist" });
     }
     else {
-      const result = await stateSchema.create({ stateName, countryId })
+      const result = await stateSchema.create({ stateName, countryId,isActive })
       if (result._id) {
-        res.json({ statusCode: 200, result: { stateId: result._id, stateName, countryId } });
+        res.json({ statusCode: 200, result: { stateId: result._id, stateName, countryId,isActive } });
       }
       else {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "State not found" });
       }
     }
   }
@@ -28,6 +30,7 @@ router.post('/state', async (req, res) => {
 });
 
 // Get all states
+
 router.get('/state', async (req, res) => {
   try {
     let states = await stateSchema.find();
@@ -37,9 +40,10 @@ router.get('/state', async (req, res) => {
         let country = await countrySchema.findOne({ _id: element.countryId });
         let temp = {
           _id: element._id,
-          countryId : element.countryId,
+          // countryId : element.countryId,
           stateName: element.stateName,
-          countryName: country.countryName
+          countryName: country.countryName,
+          isActive:element.isActive
         }
         newarr.push(temp);
       }
@@ -56,6 +60,7 @@ router.get('/state', async (req, res) => {
 });
 
 // Get a single state by ID
+
 router.get('/state/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -64,7 +69,7 @@ router.get('/state/:id', async (req, res) => {
       res.json({ statusCode: 200, result: { states: states } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "State not found" });
     }
   }
   catch (err) {
@@ -100,6 +105,7 @@ router.put('/state/:id', async (req, res) => {
 
 
 // Delete a state by ID
+
 router.delete('/state/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,6 +129,7 @@ router.delete('/state/:id', async (req, res) => {
 });
 
 // Get states by district
+
 router.get('/state/getSateteByCountry/:countryId', async (req, res, next) => {
   try {
     const { countryId } = req.params;

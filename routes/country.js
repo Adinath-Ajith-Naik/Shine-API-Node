@@ -6,17 +6,18 @@ const countrySchema = require('../models/country.models')
 router.post('/country', async (req, res) => {
   try {
     const { countryName } = req.body;
+    const  isActive  = true;
     const countryExist = await countrySchema.findOne({ countryName: (countryName) })
     if (countryExist) {
-      res.json({ statusCode: 401, message: "item already exist" });
+      res.json({ statusCode: 401, message: "Country already exist" });
     }
     else {
-      const result = await countrySchema.create({ countryName })
+      const result = await countrySchema.create({ countryName, isActive })
       if (result._id) {
-        res.json({ statusCode: 200, result: { countryid: result._id, countryName } });
+        res.json({ statusCode: 200, result: { countryid: result._id, countryName,isActive } });
       }
       else {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "Country not found" });
       }
     }
 
@@ -35,7 +36,7 @@ router.get('/country', async (req, res) => {
       res.json({ statusCode: 200, result: { countries: countries } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "Country not found" });
     }
   }
   catch (err) {
@@ -52,7 +53,7 @@ router.get('/country_home', async (req, res) => {
       res.json({ statusCode: 200, result: { countries: countries } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "Country not found" });
     }
   }
   catch (err) {
@@ -69,7 +70,7 @@ router.get('/country/:id', async (req, res) => {
       res.json({ statusCode: 200, result: { countries: countries } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "Country not found" });
     }
   }
   catch (err) {
@@ -86,14 +87,14 @@ router.put('/country/:id', async (req, res) => {
     if (countryExist) {
       const result = await countrySchema.updateOne({ _id: (id) }, { $set: { countryName } })
       if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "Country not found" });
       }
       else {
-        res.json({ statusCode: 200, result: { message: "details updated" } });
+        res.json({ statusCode: 200, result: { message: "Country details updated" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "Country not found" });
     }
 
   }
@@ -110,14 +111,14 @@ router.delete('/country/:id', async (req, res) => {
     if (countryExist) {
       const result = await countrySchema.deleteOne({ _id: (id) });
       if (result.deletedCount === 0) {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "Country not found" });
       }
       else {
-        res.json({ statusCode: 200, result: { message: "item deleted" } });
+        res.json({ statusCode: 200, result: { message: "Country deleted" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "Country not found" });
     }
   }
   catch (err) {

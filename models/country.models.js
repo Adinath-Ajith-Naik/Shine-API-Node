@@ -1,7 +1,8 @@
 const mongoose = require('../database')
 
 const schema = {
-    countryName : String
+    countryName : String,
+    isActive : Boolean,
   };
   
   const collectionName = "country";

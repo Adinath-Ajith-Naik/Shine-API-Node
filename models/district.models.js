@@ -4,6 +4,8 @@ const schema = {
     districtName : String,
     countryId: String,
     stateId :String,
+    isActive : Boolean,
+
   };
   
   const collectionName = "district";

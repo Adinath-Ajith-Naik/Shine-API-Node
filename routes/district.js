@@ -9,17 +9,19 @@ const countrySchema = require('../models/country.models')
 router.post('/district', async (req, res) => {
   try {
     const { districtName, countryId,stateId } = req.body;
+    const  isActive  = true;
+
     const nameExist = await districtSchema.findOne({ districtName: (districtName) })
     if (nameExist) {
-      res.json({ statusCode: 401, message: "item already exist" });
+      res.json({ statusCode: 401, message: "District already exist" });
     }
     else {
-      const result = await districtSchema.create({ districtName, countryId, stateId })
+      const result = await districtSchema.create({ districtName, countryId, stateId,isActive })
       if (result._id) {
-        res.json({ statusCode: 200, message:"success", result: { districtId: result._id, districtName, countryId,stateId } });
+        res.json({ statusCode: 200, message:"success", result: { districtId: result._id, districtName, countryId,stateId,isActive } });
       }
       else {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "District not found" });
       }
     }
   }
@@ -40,11 +42,12 @@ router.get('/district', async (req, res) => {
         let state = await stateSchema.findOne({ _id: element.stateId });
         let temp = {
           _id: element._id,
-          countryId : element.countryId,
-          stateId : element.stateId,
+          // countryId : element.countryId,
+          // stateId : element.stateId,
           districtName: element.districtName,
           stateName: state.stateName,
-          countryName: country.countryName
+          countryName: country.countryName,
+          isActive: element.isActive
         }
         newarr.push(temp);
       }
@@ -52,7 +55,7 @@ router.get('/district', async (req, res) => {
       res.json({ statusCode: 200, message:"success", result: { districts: newarr } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "District not found" });
     }
   }
   catch (err) {
@@ -69,7 +72,7 @@ router.get('/district/:id', async (req, res) => {
       res.json({ statusCode: 200, message:"success", result: { districts: districts } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "District not found" });
     }
   }
   catch (err) {
@@ -87,14 +90,14 @@ router.put('/district/:id', async (req, res) => {
     if (districtExist) {
       const result = await districtSchema.updateOne({ _id: (id) }, { $set: { districtName } })
       if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "District not found" });
       }
       else {
         res.json({ statusCode: 200, message:"success", result: { message: "details updated" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "District not found" });
     }
 
   }
@@ -112,14 +115,14 @@ router.delete('/district/:id', async (req, res) => {
     if (districtExist) {
       const result = await districtSchema.deleteOne({ _id: (id) });
       if (result.deletedCount === 0) {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "District not found" });
       }
       else {
-        res.json({ statusCode: 200,message:"success",  result: { message: "item deleted" } });
+        res.json({ statusCode: 200,message:"success",  result: { message: "District deleted" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "District not found" });
     }
   }
   catch (err) {
@@ -136,7 +139,7 @@ router.get('/district/getDistrictByState/:stateId', async (req, res, next) => {
       res.json({ statusCode: 200, message:"success", result: { districts: districts } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "District not found" });
     }
   }
   catch (err) {

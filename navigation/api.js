@@ -6,13 +6,7 @@ const expressSanitizer = require('express-sanitizer');
 const countryRouter = require('../routes/country');
 const stateRouter = require('../routes/state');
 const districtRouter = require('../routes/district');
-const areaRouter = require('../routes/area');
-const zoneRouter = require('../routes/zone');
-const parkingRouter = require('../routes/parking');
-const userRouter = require('../routes/user');
-const employeeRouter = require('../routes/employee');
-const customerRouter = require('../routes/customer');
-const bookingRouter = require('../routes/booking');
+
 
 const app = express();
 app.use(cors({
@@ -27,14 +21,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/apiV1', countryRouter);
 app.use('/apiV1', stateRouter);
 app.use('/apiV1', districtRouter);
-app.use('/apiV1', areaRouter);
-app.use('/apiV1', areaRouter);
-app.use('/apiV1', zoneRouter);
-app.use('/apiV1', parkingRouter);
-app.use('/apiV1', userRouter);
-app.use('/apiV1', customerRouter);
-app.use('/apiV1', employeeRouter);
-app.use('/apiV1', bookingRouter);
 
 
 app.use(express.json());
