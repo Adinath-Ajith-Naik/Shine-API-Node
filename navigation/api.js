@@ -6,6 +6,7 @@ const expressSanitizer = require('express-sanitizer');
 const countryRouter = require('../routes/country');
 const stateRouter = require('../routes/state');
 const districtRouter = require('../routes/district');
+const categoryRouter = require('../routes/category');
 
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/apiV1', countryRouter);
 app.use('/apiV1', stateRouter);
 app.use('/apiV1', districtRouter);
+app.use('/apiV1', categoryRouter);
 
 
 app.use(express.json());

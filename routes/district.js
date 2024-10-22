@@ -4,9 +4,8 @@ const districtSchema = require('../models/district.models')
 const stateSchema = require('../models/state.models')
 const countrySchema = require('../models/country.models')
 
-
 // Create a new district
-router.post('/district', async (req, res) => {
+router.post('/addDistrict', async (req, res) => {
   try {
     const { districtName, countryId,stateId } = req.body;
     const  isActive  = true;
@@ -32,7 +31,7 @@ router.post('/district', async (req, res) => {
 });
 
 // Get all districts
-router.get('/district', async (req, res) => {
+router.get('/districtList', async (req, res) => {
   try {
     let districts = await districtSchema.find();
     if (districts) {
@@ -64,7 +63,7 @@ router.get('/district', async (req, res) => {
 });
 
 // Get a single district by ID
-router.get('/district/:id', async (req, res) => {
+router.get('/districtById/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const districts = await districtSchema.findOne({ _id: (id) })
@@ -80,20 +79,19 @@ router.get('/district/:id', async (req, res) => {
   }
 });
 
-
 // Update a district by ID
 router.put('/district/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { districtName } = req.body;
+    const { districtName,stateId,countryId } = req.body;
     const districtExist = await districtSchema.findOne({ _id: (id) })
     if (districtExist) {
-      const result = await districtSchema.updateOne({ _id: (id) }, { $set: { districtName } })
+      const result = await districtSchema.updateOne({ _id: (id) }, { $set: { districtName,stateId,countryId } })
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "District not found" });
       }
       else {
-        res.json({ statusCode: 200, message:"success", result: { message: "details updated" } });
+        res.json({ statusCode: 200, message:"success", result: { message: "District details updated" } });
       }
     }
     else {
@@ -106,15 +104,15 @@ router.put('/district/:id', async (req, res) => {
   }
 });
 
-
 // Delete a district by ID
-router.delete('/district/:id', async (req, res) => {
+router.put('/deleteDistrict/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const isActive = false;
     const districtExist = await districtSchema.findOne({ _id: (id) })
     if (districtExist) {
-      const result = await districtSchema.deleteOne({ _id: (id) });
-      if (result.deletedCount === 0) {
+      const result = await districtSchema.updateOne({ _id: (id) },{$set:{isActive}});
+      if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "District not found" });
       }
       else {
@@ -131,7 +129,7 @@ router.delete('/district/:id', async (req, res) => {
 });
 
 // Get districts by stateId
-router.get('/district/getDistrictByState/:stateId', async (req, res, next) => {
+router.get('/district/getByState/:stateId', async (req, res, next) => {
   try {
     const { stateId } = req.params;
     let districts = await districtSchema.find({ stateId: stateId });
@@ -145,6 +143,6 @@ router.get('/district/getDistrictByState/:stateId', async (req, res, next) => {
   catch (err) {
     res.json({ statusCode: 400, message: err.message })
   }
-})
+});
 
 module.exports = router;

@@ -4,7 +4,7 @@ const stateSchema = require('../models/state.models')
 const countrySchema = require('../models/country.models')
 
 // Create a new state
-router.post('/state', async (req, res) => {
+router.post('/addState', async (req, res) => {
   try {
     const { stateName, countryId } = req.body;
     const  isActive  = true;
@@ -30,8 +30,7 @@ router.post('/state', async (req, res) => {
 });
 
 // Get all states
-
-router.get('/state', async (req, res) => {
+router.get('/stateList', async (req, res) => {
   try {
     let states = await stateSchema.find();
     if (states) {
@@ -60,8 +59,7 @@ router.get('/state', async (req, res) => {
 });
 
 // Get a single state by ID
-
-router.get('/state/:id', async (req, res) => {
+router.get('/stateById/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const states = await stateSchema.findOne({ _id: (id) })
@@ -77,24 +75,23 @@ router.get('/state/:id', async (req, res) => {
   }
 });
 
-
 // Update a state by ID
-router.put('/state/:id', async (req, res) => {
+router.put('/updateState/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { stateName } = req.body;
+    const { stateName,countryId } = req.body;
     const stateExist = await stateSchema.findOne({ _id: (id) })
     if (stateExist) {
-      const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName } })
+      const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName,countryId } })
       if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "item not found" });
+        res.json({ statusCode: 404, message: "State not found" });
       }
       else {
-        res.json({ statusCode: 200, result: { message: "details updated" } });
+        res.json({ statusCode: 200, result: { message: "State details updated" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "State not found" });
     }
 
   }
@@ -103,42 +100,41 @@ router.put('/state/:id', async (req, res) => {
   }
 });
 
-
-// Delete a state by ID
-
-router.delete('/state/:id', async (req, res) => {
+// Delete state 
+router.get('/deleteState/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const isActive = false;
     const stateExist = await stateSchema.findOne({ _id: (id) })
     if (stateExist) {
-      const result = await stateSchema.deleteOne({ _id: (id) });
-      if (result.deletedCount === 0) {
-        res.json({ statusCode: 404, message: "item not found" });
+      const result = await stateSchema.updateOne({ _id: (id) }, { $set: { isActive } })
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "State not found" });
       }
       else {
-        res.json({ statusCode: 200, result: { message: "item deleted" } });
+        res.json({ statusCode: 200, result: { message: "State Deleted" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "State not found" });
     }
+
   }
   catch (err) {
     res.json({ statusCode: 400, message: err.message })
   }
 });
 
-// Get states by district
-
-router.get('/state/getSateteByCountry/:countryId', async (req, res, next) => {
+// Get state by country
+router.get('/state/getByCountry/:countryId', async (req, res, next) => {
   try {
     const { countryId } = req.params;
     let states = await stateSchema.find({ countryId: countryId });
-    if (states) {
+    if (states.length > 0) {
       res.json({ statusCode: 200, result: { states: states } });
     }
     else {
-      res.json({ statusCode: 404, message: "item not found" });
+      res.json({ statusCode: 404, message: "No states found!!!" });
     }
   }
   catch (err) {
