@@ -7,6 +7,7 @@ const countryRouter = require('../routes/country');
 const stateRouter = require('../routes/state');
 const districtRouter = require('../routes/district');
 const categoryRouter = require('../routes/category');
+const subCategoryRouter = require('../routes/subCategory');
 
 
 const app = express();
@@ -23,6 +24,7 @@ app.use('/apiV1', countryRouter);
 app.use('/apiV1', stateRouter);
 app.use('/apiV1', districtRouter);
 app.use('/apiV1', categoryRouter);
+app.use('/apiV1', subCategoryRouter);
 
 
 app.use(express.json());

@@ -4,7 +4,7 @@ const categorySchema = require('../models/category.models')
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-// Create a new banner
+// Create a new Category
 router.post('/addCategory', async (req, res) => {
   var addData = new categorySchema({
     categoryName : req.body.categoryName,
@@ -76,7 +76,7 @@ router.put('/category/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { categoryName} = req.body;
-    let photoUrl = req.body.photoUrl;
+    const photoUrl = req.body.photoUrl;
     let new_image;
     const categoryExist = await categorySchema.findOne({ _id: (id) })
     if (categoryExist) {
@@ -101,7 +101,7 @@ router.put('/category/:id', async (req, res) => {
         // addData.image = path;
         new_image =`${newId}.jpg`;
       }
-      const result = await bannerSchema.updateMany({ _id: (id) }, { $set: {categoryName: categoryName, photoUrl: new_image}});
+      const result = await categorySchema.updateMany({ _id: (id) }, { $set: {categoryName: categoryName, photoUrl: new_image}});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Category not found" });
       }
@@ -120,12 +120,13 @@ router.put('/category/:id', async (req, res) => {
 });
 
 // Delete a category by ID
-router.delete('/deleteCategory/:id', async (req, res) => {
+router.get('/deleteCategory/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const isActive = false;
     const categoryExist = await categorySchema.findOne({ _id: (id) })
     if (categoryExist) {
-      const result = await categorySchema.updateOne({ _id: (id) });
+      const result = await categorySchema.updateOne({ _id: (id) }, {$set:(isActive)});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Category not found" });
       }
