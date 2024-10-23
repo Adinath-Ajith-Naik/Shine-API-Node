@@ -126,7 +126,7 @@ router.get('/deleteCategory/:id', async (req, res) => {
     const isActive = false;
     const categoryExist = await categorySchema.findOne({ _id: (id) })
     if (categoryExist) {
-      const result = await categorySchema.updateOne({ _id: (id) }, {$set:(isActive)});
+      const result = await categorySchema.updateOne({ _id: (id) }, {$set:{isActive}});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Category not found" });
       }

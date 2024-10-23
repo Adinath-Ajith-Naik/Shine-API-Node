@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const subCategorySchema = require('../models/subcategory.models')
-const categorySchema = require('../models/category.models')
+const subCategorySchema = require('../models/subCategory.models');
+const categorySchema = require('../models/category.models');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
@@ -40,8 +40,8 @@ router.post('/addSubCategory', async (req, res) => {
         console.log("SubCategory Added");
   });
   
-  // Get all Sub Categories
-  router.get('/subCategoryList', async (req, res) => {
+// Get all Sub Categories
+router.get('/subCategoryList', async (req, res) => {
     try {
       let subCategories = await subCategorySchema.find();
       if (subCategories) {
@@ -56,8 +56,8 @@ router.post('/addSubCategory', async (req, res) => {
     }
   });
   
-  // Get a Sub Category by ID
-  router.get('/subCategoryById/:id', async (req, res) => {
+// Get a Sub Category by ID
+router.get('/subCategoryById/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const subCategories = await subCategorySchema.findOne({ _id: (id) })
@@ -73,8 +73,8 @@ router.post('/addSubCategory', async (req, res) => {
     }
   });
 
-    // Get a Sub Category by Category ID
-    router.get('/subCategory/getByCategory/:categoryId', async (req, res) => {
+// Get a Sub Category by Category ID
+router.get('/subCategory/getByCategory/:categoryId', async (req, res) => {
         try {
           const { categoryId } = req.params;
           const subCategories = await subCategorySchema.find({ categoryId: (categoryId) })
@@ -90,8 +90,8 @@ router.post('/addSubCategory', async (req, res) => {
         }
       });
   
-  // Update a category by ID
-  router.put('/subCategory/:id', async (req, res) => {
+// Update a category by ID
+router.put('/subCategory/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const { subCategoryName, categoryId} = req.body;
@@ -138,8 +138,8 @@ router.post('/addSubCategory', async (req, res) => {
     }
   });
   
-  // Delete a subcategory by ID
-  router.get('/deleteSubCategory/:id', async (req, res) => {
+// Delete a subcategory by ID
+router.get('/deleteSubCategory/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const isActive = false;
@@ -161,6 +161,5 @@ router.post('/addSubCategory', async (req, res) => {
       res.json({ statusCode: 400, message: err.message })
     }
   });
-  
-  
-  module.exports = router;
+    
+module.exports = router;
