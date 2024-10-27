@@ -27,7 +27,7 @@ router.post('/addCustomer', async (req, res) => {
       catch (err) {
         res.json({ statusCode: 400, message: err.message })
       }
-  });
+});
   
 // Get all customers
 router.get('/customerList', async (req, res) => {
@@ -43,7 +43,7 @@ router.get('/customerList', async (req, res) => {
     catch (err) {
       res.json({ statusCode: 400, message: err.message })
     }
-  });
+});
   
 // Get customer details
 router.get('/customer/:id', async (req, res) => {
@@ -60,7 +60,7 @@ router.get('/customer/:id', async (req, res) => {
     catch (err) {
       res.json({ statusCode: 400, message: err.message })
     }
-  });
+});
 
 // Get customers by States
 router.get('/customer/getByState/:stateId', async (req, res) => {
@@ -77,7 +77,7 @@ router.get('/customer/getByState/:stateId', async (req, res) => {
         catch (err) {
           res.json({ statusCode: 400, message: err.message })
         }
-    });
+});
 
 // Get customers by District
 router.get('/customer/getByDistrict/:districtId', async (req, res) => {
@@ -119,7 +119,7 @@ router.put('/customer/:id', async (req, res) => {
   catch (err) {
     res.json({ statusCode: 400, message: err.message })
   }
-  });
+});
   
 // Delete a customer by ID
 router.get('/deleteCustomer/:id', async (req, res) => {
@@ -143,6 +143,6 @@ router.get('/deleteCustomer/:id', async (req, res) => {
     catch (err) {
       res.json({ statusCode: 400, message: err.message })
     }
-  });
+});
     
 module.exports = router;
