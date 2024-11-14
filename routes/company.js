@@ -3,6 +3,7 @@ const router = express.Router();
 const districtSchema = require('../models/district.models');
 const stateSchema = require('../models/state.models');
 const countrySchema = require('../models/country.models');
+const companySchema = require('../models/company.models');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
