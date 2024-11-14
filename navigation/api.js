@@ -10,6 +10,7 @@ const categoryRouter = require('../routes/category');
 const subCategoryRouter = require('../routes/subCategory');
 const customerRouter = require('../routes/customer');
 const companyRouter = require('../routes/company');
+const statusRouter = require('../routes/status');
 
 const app = express();
 app.use(cors({
@@ -28,6 +29,7 @@ app.use('/apiV1', categoryRouter);
 app.use('/apiV1', subCategoryRouter);
 app.use('/apiV1', customerRouter);
 app.use('/apiV1',companyRouter);
+app.use('/apiV1',statusRouter);
 
 
 app.use(express.json());
