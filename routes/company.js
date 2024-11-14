@@ -6,19 +6,26 @@ const countrySchema = require('../models/country.models');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-// Create a new Category
-router.post('/addCategory', async (req, res) => {
-  var addData = new categorySchema({
-    categoryName : req.body.categoryName,
-    photoUrl : req.body.photoUrl,
+// Create a new Company
+router.post('/addCompany', async (req, res) => {
+  var addData = new companySchema({
+    name : req.body.name,
+    email : req.body.email,
+    contactNo : req.body.contactNo,
+    address : req.body.address,
+    pincode : req.body.pincode,
+    districtId : req.body.districtId,
+    stateId : req.body.stateId,
+    countryId : req.body.countryId,
+    logoUrl : req.body.logoUrl,
     isActive : true,
   });
 
-  if(req.body.photoUrl != null && req.body.photoUrl != ""){
+  if(req.body.logoUrl != null && req.body.logoUrl != ""){
     const newId = uuidv4();
-    const path = `Images\\Category\\${newId}.jpg`
+    const path = `Images\\Company\\${newId}.jpg`
     // const path = `img.jpg`
-    const base64Data = req.body.photoUrl;
+    const base64Data = req.body.logoUrl;
     let base64Image = base64Data.split(';base64,').pop();
     const BinaryData = Buffer.from(base64Image,'base64');
     console.log(BinaryData);
@@ -32,23 +39,24 @@ router.post('/addCategory', async (req, res) => {
       }
     });
     // addData.image = path;
-    addData.photoUrl =`${newId}.jpg`;
+    addData.logoUrl =`${newId}.jpg`;
   }
 
     const addDataToSave = addData.save();
       res.status(200).json(addDataToSave);
-      console.log("Category Added");
+      console.log("Company Added");
 });
 
-// Get all Categories
-router.get('/categoryList', async (req, res) => {
+// Get all Companies
+
+router.get('/companyList', async (req, res) => {
   try {
-    let categories = await categorySchema.find();
-    if (categories) {
-      res.json({ statusCode: 200, result: { categories: categories } });
+    let companies = await companySchema.find();
+    if (companies) {
+      res.json({ statusCode: 200, result: { companies: companies } });
     }
     else {
-      res.json({ statusCode: 404, message: "Category not found" });
+      res.json({ statusCode: 404, message: "Company not found" });
     }
   }
   catch (err) {
@@ -56,16 +64,17 @@ router.get('/categoryList', async (req, res) => {
   }
 });
 
-// Get a category by ID
-router.get('/categoryById/:id', async (req, res) => {
+// Get a company by ID
+
+router.get('/companyById/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const categories = await categorySchema.findOne({ _id: (id) })
-    if (categories) {
-      res.json({ statusCode: 200, result: { categories: categories } });
+    const companies = await companySchema.findOne({ _id: (id) })
+    if (companies) {
+      res.json({ statusCode: 200, result: { companies: companies } });
     }
     else {
-      res.json({ statusCode: 404, message: "Category not found" });
+      res.json({ statusCode: 404, message: "Company not found" });
     }
   }
   catch (err) {
@@ -73,21 +82,22 @@ router.get('/categoryById/:id', async (req, res) => {
   }
 });
 
-// Update a category by ID
-router.put('/category/:id', async (req, res) => {
+// Update a company by ID
+
+router.put('/company/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { categoryName} = req.body;
-    const photoUrl = req.body.photoUrl;
+    const { name, email, contactNo, address, pincode, districtId, stateId, countryId} = req.body;
+    const photoUrl = req.body.logoUrl;
     let new_image;
-    const categoryExist = await categorySchema.findOne({ _id: (id) })
-    if (categoryExist) {
+    const companyExist = await companySchema.findOne({ _id: (id) })
+    if (companyExist) {
 
-      if(req.body.photoUrl != null && req.body.photoUrl != ""){
+      if(req.body.logoUrl != null && req.body.logoUrl != ""){
         const newId = uuidv4();
-        const path = `Images\\Category\\${newId}.jpg`
+        const path = `Images\\Company\\${newId}.jpg`
         // const path = `img.jpg`
-        const base64Data = req.body.photoUrl;
+        const base64Data = req.body.logoUrl;
         let base64Image = base64Data.split(';base64,').pop();
         const BinaryData = Buffer.from(base64Image,'base64');
         console.log(BinaryData);
@@ -103,16 +113,16 @@ router.put('/category/:id', async (req, res) => {
         // addData.image = path;
         new_image =`${newId}.jpg`;
       }
-      const result = await categorySchema.updateMany({ _id: (id) }, { $set: {categoryName: categoryName, photoUrl: new_image}});
+      const result = await companySchema.updateMany({ _id: (id) }, { $set: {name: name, email: email, contactNo:contactNo, address: address, pincode: pincode, districtId: districtId, stateId: stateId, countryId: countryId, logoUrl: new_image}});
       if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "Category not found" });
+        res.json({ statusCode: 404, message: "Company not found" });
       }
       else {
-        res.json({ statusCode: 200, result: { message: "Category Details Updated" } });
+        res.json({ statusCode: 200, result: { message: "Company Details Updated" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "Category not found" });
+      res.json({ statusCode: 404, message: "Company not found" });
     }
 
   }
@@ -121,23 +131,24 @@ router.put('/category/:id', async (req, res) => {
   }
 });
 
-// Delete a category by ID
-router.get('/deleteCategory/:id', async (req, res) => {
+// Delete a company by ID
+
+router.get('/deleteCompany/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;
-    const categoryExist = await categorySchema.findOne({ _id: (id) })
-    if (categoryExist) {
-      const result = await categorySchema.updateOne({ _id: (id) }, {$set:{isActive}});
+    const companyExist = await companySchema.findOne({ _id: (id) })
+    if (companyExist) {
+      const result = await companySchema.updateOne({ _id: (id) }, {$set:{isActive}});
       if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "Category not found" });
+        res.json({ statusCode: 404, message: "Company not found" });
       }
       else {
-        res.json({ statusCode: 200, result: { message: "Category deleted" } });
+        res.json({ statusCode: 200, result: { message: "Company deleted" } });
       }
     }
     else {
-      res.json({ statusCode: 404, message: "Category not found" });
+      res.json({ statusCode: 404, message: "Company not found" });
     }
   }
   catch (err) {
