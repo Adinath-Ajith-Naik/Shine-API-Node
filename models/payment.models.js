@@ -1,7 +1,7 @@
 const mongoose = require('../database')
 
 const schema = {
-    paymentType : String, 
+    paymentName : String, 
     isActive : Boolean
 }
 
