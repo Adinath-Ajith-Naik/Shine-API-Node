@@ -91,7 +91,7 @@ router.put('/updatePaymentType/:id', async (req, res) => {
 
 // Delete a payment
 
-router.get('/deletePaymentType/:id', async (req, res) => {
+router.post('/deletePaymentType/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;
