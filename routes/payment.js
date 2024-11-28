@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const paymentSchema = require('../models/payment.models')
 
-// Create a new status
+// Create a new payment
 
 router.post('/addPaymentType', async (req, res) => {
   try {
@@ -28,7 +28,7 @@ router.post('/addPaymentType', async (req, res) => {
   }
 });
 
-// Get all status
+// Get all payment
 
 router.get('/paymentTypeList', async (req, res) => {
   try {
@@ -45,7 +45,7 @@ router.get('/paymentTypeList', async (req, res) => {
   }
 });
 
-// Get a single status by ID
+// Get a single payment by ID
 
 router.get('/paymentTypeById/:id', async (req, res) => {
   try {
@@ -63,7 +63,7 @@ router.get('/paymentTypeById/:id', async (req, res) => {
   }
 });
 
-// Update a status by ID
+// Update a payment by ID
 
 router.put('/updatePaymentType/:id', async (req, res) => {
   try {
@@ -89,7 +89,7 @@ router.put('/updatePaymentType/:id', async (req, res) => {
   }
 });
 
-// Delete a status
+// Delete a payment
 
 router.get('/deletePaymentType/:id', async (req, res) => {
   try {
