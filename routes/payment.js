@@ -32,7 +32,7 @@ router.post('/addPaymentType', async (req, res) => {
 
 router.get('/paymentTypeList', async (req, res) => {
   try {
-    let payments = await paymentSchema.find();
+    let payments = await paymentSchema.find({ isActive: true });
     if (payments) {
       res.json({ statusCode: 200, result: { payments: payments } });
     }
@@ -91,7 +91,7 @@ router.put('/updatePaymentType/:id', async (req, res) => {
 
 // Delete a payment
 
-router.post('/deletePaymentType/:id', async (req, res) => {
+router.put('/deletePaymentType/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;

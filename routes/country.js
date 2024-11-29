@@ -30,7 +30,7 @@ router.post('/addCountry', async (req, res) => {
 // Get all countries
 router.get('/countryList', async (req, res) => {
   try {
-    let countries = await countrySchema.find();
+    let countries = await countrySchema.find({isActive : true});
     if (countries) {
       res.json({ statusCode: 200, result: { countries: countries } });
     }
@@ -102,7 +102,7 @@ router.put('/updateCountry/:id', async (req, res) => {
 });
 
 // Delete a country
-router.get('/deleteCountry/:id', async (req, res) => {
+router.put('/deleteCountry/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;
@@ -126,6 +126,7 @@ router.get('/deleteCountry/:id', async (req, res) => {
 });
 
 // Delete a country from DB
+
 router.delete('/country/:id', async (req, res) => {
   try {
     const { id } = req.params;
