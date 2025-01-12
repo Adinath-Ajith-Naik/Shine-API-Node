@@ -82,7 +82,8 @@ router.put('/updateCountry/:id', async (req, res) => {
     const { id } = req.params;
     const { countryName } = req.body;
     const countryExist = await countrySchema.findOne({ _id: (id) })
-    if (countryExist) {
+    const nameExist = await countrySchema.findOne({countryName : countryName});
+    if (countryExist && !nameExist) {
       const result = await countrySchema.updateOne({ _id: (id) }, { $set: { countryName } })
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Country not found" });
@@ -92,7 +93,7 @@ router.put('/updateCountry/:id', async (req, res) => {
       }
     }
     else {
-      res.json({ statusCode: 404, message: "Country not found" });
+      res.json({ statusCode: 401, message: "Country Name Already Exist" });
     }
 
   }
