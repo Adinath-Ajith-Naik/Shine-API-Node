@@ -32,14 +32,14 @@ router.post('/addState', async (req, res) => {
 // Get all states
 router.get('/stateList', async (req, res) => {
   try {
-    let states = await stateSchema.find();
+    let states = await stateSchema.find({isActive : true});
     if (states) {
       let newarr = [];
       for (const element of states) {
         let country = await countrySchema.findOne({ _id: element.countryId });
         let temp = {
           _id: element._id,
-          // countryId : element.countryId,
+          countryId : element.countryId,
           stateName: element.stateName,
           countryName: country.countryName,
           isActive:element.isActive
@@ -81,7 +81,8 @@ router.put('/updateState/:id', async (req, res) => {
     const { id } = req.params;
     const { stateName,countryId } = req.body;
     const stateExist = await stateSchema.findOne({ _id: (id) })
-    if (stateExist) {
+    const nameExist = await countrySchema.findOne({stateName : stateName});
+    if (stateExist && !nameExist) {
       const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName,countryId } })
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "State not found" });
@@ -101,7 +102,7 @@ router.put('/updateState/:id', async (req, res) => {
 });
 
 // Delete state 
-router.get('/deleteState/:id', async (req, res) => {
+router.put('/deleteState/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;
