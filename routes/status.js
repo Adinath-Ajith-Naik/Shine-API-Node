@@ -32,7 +32,7 @@ router.post('/addStatus', async (req, res) => {
 
 router.get('/statusList', async (req, res) => {
   try {
-    let statuses = await statusSchema.find();
+    let statuses = await statusSchema.find({isActive : true});
     if (statuses) {
       res.json({ statusCode: 200, result: { statuses: statuses } });
     }
@@ -69,8 +69,9 @@ router.put('/updateStatus/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { statusName } = req.body;
-    const statusExist = await statusSchema.findOne({ _id: (id) })
-    if (statusExist) {
+    const countryExist = await statusSchema.findOne({ _id: (id) })
+    const nameExist = await statusSchema.findOne({statusName : statusName});
+    if (countryExist && !nameExist) {
       const result = await statusSchema.updateOne({ _id: (id) }, { $set: { statusName } })
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Status not found" });
@@ -80,7 +81,7 @@ router.put('/updateStatus/:id', async (req, res) => {
       }
     }
     else {
-      res.json({ statusCode: 404, message: "Status not found" });
+      res.json({ statusCode: 401, message: "Status Name Already Exist" });
     }
 
   }
@@ -91,7 +92,7 @@ router.put('/updateStatus/:id', async (req, res) => {
 
 // Delete a status
 
-router.get('/deleteStatus/:id', async (req, res) => {
+router.put('/deleteStatus/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;

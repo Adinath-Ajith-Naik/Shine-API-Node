@@ -33,7 +33,7 @@ router.post('/addDistrict', async (req, res) => {
 // Get all districts
 router.get('/districtList', async (req, res) => {
   try {
-    let districts = await districtSchema.find();
+    let districts = await districtSchema.find({isActive : true});
     if (districts) {
       let newarr = [];
       for (const element of districts) {
@@ -41,8 +41,8 @@ router.get('/districtList', async (req, res) => {
         let state = await stateSchema.findOne({ _id: element.stateId });
         let temp = {
           _id: element._id,
-          // countryId : element.countryId,
-          // stateId : element.stateId,
+          countryId : element.countryId,
+          stateId : element.stateId,
           districtName: element.districtName,
           stateName: state.stateName,
           countryName: country.countryName,
@@ -144,5 +144,5 @@ router.get('/district/getByState/:stateId', async (req, res, next) => {
     res.json({ statusCode: 400, message: err.message })
   }
 });
-
+  
 module.exports = router;
