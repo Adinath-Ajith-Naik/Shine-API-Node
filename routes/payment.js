@@ -70,7 +70,8 @@ router.put('/updatePaymentType/:id', async (req, res) => {
     const { id } = req.params;
     const { paymentName } = req.body;
     const paymentExist = await paymentSchema.findOne({ _id: (id) })
-    if (paymentExist) {
+    const nameExist = await paymentSchema.findone({paymentName : paymentName});
+    if (paymentExist && !nameExist) {
       const result = await paymentSchema.updateOne({ _id: (id) }, { $set: { paymentName } })
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Payment Type not found" });
