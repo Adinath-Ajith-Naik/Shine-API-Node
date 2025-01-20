@@ -35,6 +35,7 @@ router.post('/addCategory', async (req, res) => {
 
     const addDataToSave = addData.save();
       res.status(200).json(addDataToSave);
+      // res.json({statusCode:200, message:"Success"})
       console.log("Category Added");
 });
 
