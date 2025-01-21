@@ -4,45 +4,82 @@ const categorySchema = require('../models/category.models')
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-// Create a new Category
+// Category Add
 router.post('/addCategory', async (req, res) => {
-  var addData = new categorySchema({
-    categoryName : req.body.categoryName,
-    photoUrl : req.body.photoUrl,
-    isActive : true,
-  });
+  try {
+    const { categoryName, photoUrl } = req.body;
+    const isActive = true;
 
-  if(req.body.photoUrl != null && req.body.photoUrl != ""){
-    const newId = uuidv4();
-    const path = `Images\\Category\\${newId}.jpg`
-    // const path = `img.jpg`
-    const base64Data = req.body.photoUrl;
-    let base64Image = base64Data.split(';base64,').pop();
-    const BinaryData = Buffer.from(base64Image,'base64');
-    console.log(BinaryData);
-    fs.writeFile(path, BinaryData, (err) => {
-      // console.log("Image Uploaded");
-      if(err){
-        console.error("Error writing in file",err);
-      }
-      else{
-        console.log("Base64 converted",path);
-      }
+    // Check if category already exists
+    const categoryExist = await categorySchema.findOne({ categoryName:categoryName });
+    if (categoryExist) {
+      return res.json({ statusCode: 401, message: "Category already exists" });
+    }
+
+    // Prepare and save the image if provided
+    let savedPhotoUrl = null;
+    if (photoUrl) {
+      const newId = uuidv4();
+      const path = `Images\\Category\\${newId}.jpg`;
+      const base64Image = photoUrl.split(';base64,').pop();
+      const binaryData = Buffer.from(base64Image, 'base64');
+
+      fs.writeFile(path, binaryData, (err) => {
+        if (err) {
+          console.error("Error writing image file:", err);
+          return res.json({ statusCode: 500, message: "Image upload failed" });
+        }
+        console.log("Image uploaded successfully:", path);
+      });
+      savedPhotoUrl = `${newId}.jpg`;
+    }
+
+    // Create a new category document
+    const newCategory = await categorySchema.create({
+      categoryName,
+      photoUrl: savedPhotoUrl,
+      isActive,
     });
-    // addData.image = path;
-    addData.photoUrl =`${newId}.jpg`;
-  }
 
-    const addDataToSave = addData.save();
-      res.status(200).json(addDataToSave);
-      // res.json({statusCode:200, message:"Success"})
-      console.log("Category Added");
+    if (newCategory._id) {
+      res.json({
+        statusCode: 200,
+        result: {
+          categoryId: newCategory._id,
+          categoryName: newCategory.categoryName,
+          photoUrl: newCategory.photoUrl,
+          isActive: newCategory.isActive,
+        },
+      });
+    } else {
+      res.json({ statusCode: 404, message: "Failed to add category" });
+    }
+  } catch (err) {
+    res.json({ statusCode: 400, message: err.message });
+  }
 });
 
 // Get all Categories
 router.get('/categoryList', async (req, res) => {
   try {
     let categories = await categorySchema.find();
+    if (categories) {
+      res.json({ statusCode: 200, result: { categories: categories } });
+    }
+    else {
+      res.json({ statusCode: 404, message: "Category not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
+// Image by ID
+router.get('/categoryImage/:filename', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const categories = await categorySchema.findOne({ _id: (id) })
     if (categories) {
       res.json({ statusCode: 200, result: { categories: categories } });
     }
@@ -73,7 +110,7 @@ router.get('/categoryById/:id', async (req, res) => {
 });
 
 // Update a category by ID
-router.put('/category/:id', async (req, res) => {
+router.put('/updateCategory/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { categoryName} = req.body;
@@ -121,7 +158,7 @@ router.put('/category/:id', async (req, res) => {
 });
 
 // Delete a category by ID
-router.get('/deleteCategory/:id', async (req, res) => {
+router.put('/deleteCategory/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const isActive = false;
@@ -142,6 +179,43 @@ router.get('/deleteCategory/:id', async (req, res) => {
   catch (err) {
     res.json({ statusCode: 400, message: err.message })
   }
+});
+
+
+
+// Create Category (old Method)
+router.post('/saveCategory', async (req, res) => {
+  var addData = new categorySchema({
+    categoryName : req.body.categoryName,
+    photoUrl : req.body.photoUrl,
+    isActive : true,
+  });
+
+  if(req.body.photoUrl != null && req.body.photoUrl != ""){
+    const newId = uuidv4();
+    const path = `Images\\Category\\${newId}.jpg`
+    // const path = `img.jpg`
+    const base64Data = req.body.photoUrl;
+    let base64Image = base64Data.split(';base64,').pop();
+    const BinaryData = Buffer.from(base64Image,'base64');
+    console.log(BinaryData);
+    fs.writeFile(path, BinaryData, (err) => {
+      // console.log("Image Uploaded");
+      if(err){
+        console.error("Error writing in file",err);
+      }
+      else{
+        console.log("Base64 converted",path);
+      }
+    });
+    // addData.image = path;
+    addData.photoUrl =`${newId}.jpg`;
+  }
+
+    const addDataToSave = addData.save();
+      res.status(200).json(addDataToSave);
+      // res.json({statusCode:200, message:"Success"})
+      console.log("Category Added");
 });
 
 
