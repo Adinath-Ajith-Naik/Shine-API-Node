@@ -3,9 +3,6 @@ const http = require('http');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const cors = require('cors');
-app.use(cors());
-
 let port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
 

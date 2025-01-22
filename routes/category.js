@@ -62,7 +62,7 @@ router.post('/addCategory', async (req, res) => {
 // Get all Categories
 router.get('/categoryList', async (req, res) => {
   try {
-    let categories = await categorySchema.find();
+    let categories = await categorySchema.find({isActive : true});
     if (categories) {
       res.json({ statusCode: 200, result: { categories: categories } });
     }

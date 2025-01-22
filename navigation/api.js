@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const expressSanitizer = require('express-sanitizer');
 
+const bodyParser = require('body-parser');
+
 const countryRouter = require('../routes/country');
 const stateRouter = require('../routes/state');
 const districtRouter = require('../routes/district');
@@ -12,11 +14,17 @@ const customerRouter = require('../routes/customer');
 const companyRouter = require('../routes/company');
 const statusRouter = require('../routes/status');
 const paymentRouter = require('../routes/payment');
+const imgRouter = require('../image');
 
 const app = express();
-app.use(cors({
-  origin: '*'
-}));
+// app.use(cors({
+//   origin: '*'
+// }));
+
+app.use(cors());
+
+app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(expressSanitizer());
 require('events').EventEmitter.defaultMaxListeners = 15;
@@ -32,6 +40,8 @@ app.use('/apiV1', customerRouter);
 app.use('/apiV1',companyRouter);
 app.use('/apiV1',statusRouter);
 app.use('/apiV1',paymentRouter);
+app.use('/apiv1', imgRouter);
+
 
 
 app.use(express.json());
