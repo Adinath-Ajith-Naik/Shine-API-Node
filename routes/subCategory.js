@@ -7,54 +7,90 @@ const { v4: uuidv4 } = require('uuid');
 
 // Create a new subcategory
 router.post('/addSubCategory', async (req, res) => {
-    var addData = new subCategorySchema({
-      subCategoryName : req.body.subCategoryName,
-      photoUrl : req.body.photoUrl,
-      categoryId : req.body.categoryId,
-      isActive : true,
-    });
-  
-    if(req.body.photoUrl != null && req.body.photoUrl != ""){
-      const newId = uuidv4();
-      const path = `Images\\SubCategory\\${newId}.jpg`
-      // const path = `img.jpg`
-      const base64Data = req.body.photoUrl;
-      let base64Image = base64Data.split(';base64,').pop();
-      const BinaryData = Buffer.from(base64Image,'base64');
-      console.log(BinaryData);
-      fs.writeFile(path, BinaryData, (err) => {
-        // console.log("Image Uploaded");
-        if(err){
-          console.error("Error writing in file",err);
-        }
-        else{
-          console.log("Base64 converted",path);
-        }
-      });
-      // addData.image = path;
-      addData.photoUrl =`${newId}.jpg`;
+  try {
+    const { subCategoryName, photoUrl,categoryId } = req.body;
+    const isActive = true;
+
+    // Check if category already exists
+    const subCategoryExist = await subCategorySchema.findOne({ subCategoryName:subCategoryName });
+    if (subCategoryExist) {
+      return res.json({ statusCode: 401, message: "Category already exists" });
     }
-  
-      const addDataToSave = addData.save();
-        res.status(200).json(addDataToSave);
-        console.log("SubCategory Added");
-  });
+
+    // Prepare and save the image if provided
+    let savedPhotoUrl = null;
+    if (photoUrl) {
+      const newId = uuidv4();
+      const path = `Images\\SubCategory\\${newId}.jpg`;
+      const base64Image = photoUrl.split(';base64,').pop();
+      const binaryData = Buffer.from(base64Image, 'base64');
+
+      fs.writeFile(path, binaryData, (err) => {
+        if (err) {
+          console.error("Error writing image file:", err);
+          return res.json({ statusCode: 500, message: "Image upload failed" });
+        }
+        console.log("Image uploaded successfully:", path);
+      });
+      savedPhotoUrl = `${newId}.jpg`;
+    }
+
+    // Create a new category document
+    const newSubCategory = await subCategorySchema.create({
+      subCategoryName,
+      categoryId,
+      photoUrl: savedPhotoUrl,
+      isActive,
+    });
+
+    if (newSubCategory._id) {
+      res.json({
+        statusCode: 200,
+        result: {
+          subCategoryId: newSubCategory._id,
+          subCategoryName: newSubCategory.subCategoryName,
+          categoryId : newSubCategory.categoryId,
+          photoUrl: newSubCategory.photoUrl,
+          isActive: newSubCategory.isActive,
+        },
+      });
+    } else {
+      res.json({ statusCode: 404, message: "Failed to add category" });
+    }
+  } catch (err) {
+    res.json({ statusCode: 400, message: err.message });
+  }
+});
   
 // Get all Sub Categories
 router.get('/subCategoryList', async (req, res) => {
-    try {
-      let subCategories = await subCategorySchema.find();
-      if (subCategories) {
-        res.json({ statusCode: 200, result: { subCategories: subCategories } });
+  try {
+    let subcategories = await subCategorySchema.find({isActive : true});
+    if (subcategories) {
+      let newarr = [];
+      for (const element of subcategories) {
+        let category = await categorySchema.findOne({ _id: element.categoryId });
+        let temp = {
+          _id: element._id,
+          categoryId : element.categoryId,
+          subCategoryName: element.subCategoryName,
+          categoryName: category.categoryName,
+          isActive:element.isActive,
+          photoUrl : element.photoUrl
+        }
+        newarr.push(temp);
       }
-      else {
-        res.json({ statusCode: 404, message: "Sub Category not found" });
-      }
+      console.log(newarr);
+      res.json({ statusCode: 200, result: { subcategories: newarr } });
     }
-    catch (err) {
-      res.json({ statusCode: 400, message: err.message })
+    else {
+      res.json({ statusCode: 404, message: "item not found" });
     }
-  });
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
   
 // Get a Sub Category by ID
 router.get('/subCategoryById/:id', async (req, res) => {
@@ -71,7 +107,7 @@ router.get('/subCategoryById/:id', async (req, res) => {
     catch (err) {
       res.json({ statusCode: 400, message: err.message })
     }
-  });
+});
 
 // Get a Sub Category by Category ID
 router.get('/subCategory/getByCategory/:categoryId', async (req, res) => {
@@ -88,7 +124,7 @@ router.get('/subCategory/getByCategory/:categoryId', async (req, res) => {
         catch (err) {
           res.json({ statusCode: 400, message: err.message })
         }
-      });
+});
   
 // Update a category by ID
 router.put('/subCategory/:id', async (req, res) => {
@@ -139,7 +175,7 @@ router.put('/subCategory/:id', async (req, res) => {
   });
   
 // Delete a subcategory by ID
-router.get('/deleteSubCategory/:id', async (req, res) => {
+router.put('/deleteSubCategory/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const isActive = false;
