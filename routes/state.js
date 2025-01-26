@@ -130,7 +130,7 @@ router.put('/deleteState/:id', async (req, res) => {
 router.get('/state/getByCountry/:countryId', async (req, res, next) => {
   try {
     const { countryId } = req.params;
-    let states = await stateSchema.find({ countryId: countryId });
+    let states = await stateSchema.find({ countryId: countryId , isActive:true});
     if (states.length > 0) {
       res.json({ statusCode: 200, result: { states: states } });
     }

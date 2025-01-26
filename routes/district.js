@@ -132,7 +132,7 @@ router.put('/deleteDistrict/:id', async (req, res) => {
 router.get('/district/getByState/:stateId', async (req, res, next) => {
   try {
     const { stateId } = req.params;
-    let districts = await districtSchema.find({ stateId: stateId });
+    let districts = await districtSchema.find({ stateId: stateId , isActive : true });
     if (districts) {
       res.json({ statusCode: 200, message:"success", result: { districts: districts } });
     }
