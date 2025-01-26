@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const districtSchema = require('../models/district.models');
-const stateSchema = require('../models/state.models');
-const countrySchema = require('../models/country.models');
+const categorySchema = require('../models/category.models');
+const subCategorySchema = require('../models/subCategory.models');
 const companySchema = require('../models/company.models');
 const productSchema = require('../models/product.models')
 const fs = require('fs');
@@ -16,7 +15,7 @@ router.post('/addProduct', async (req, res) => {
       const isActive = true;
   
       // Check if category already exists
-      const productExist = await companySchema.find({ productName:productName , weight : weight });
+      const productExist = await companySchema.find({ productName:productName});
       if (productExist) {
         return res.json({ statusCode: 401, message: "Product already exists" });
       }
@@ -124,7 +123,7 @@ router.get('/productList', async (req, res) => {
           newarr.push(temp);
         }
         console.log(newarr);
-        res.json({ statusCode: 200, message:"success", result: { companies: newarr } });
+        res.json({ statusCode: 200, message:"success", result: { products: newarr } });
       }
       else {
         res.json({ statusCode: 404, message: "Company not found" });
@@ -235,7 +234,7 @@ router.put('/updateProduct/:id', async (req, res) => {
 });
   
 // Delete a company by ID
-router.put('/deleteCompany/:id', async (req, res) => {
+router.put('/deleteProduct/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const isActive = false;
