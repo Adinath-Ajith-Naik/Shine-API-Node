@@ -29,6 +29,14 @@ router.get('/CompanyImages/:fileName', async(req,res) =>{
     res.sendFile(__dirname +  '\\Images' + '\\' + 'Company' + '\\' + fileName);
 });
 
+router.get('/productImages/:fileName', async(req,res) =>{
+
+    const fileName = req.params.fileName;
+
+    // console.log("DIRECTORY NAME :",__dirname);
+    res.sendFile(__dirname +  '\\Images' + '\\' + 'Products' + '\\' + fileName);
+});
+
 
 router.get('/Test/:fileName', async(req,res) =>{
 
