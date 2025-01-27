@@ -15,7 +15,7 @@ router.post('/addProduct', async (req, res) => {
       const isActive = true;
   
       // Check if category already exists
-      const productExist = await companySchema.find({ productName:productName});
+      const productExist = await productSchema.findOne({ productName:productName});
       if (productExist) {
         return res.json({ statusCode: 401, message: "Product already exists" });
       }
@@ -24,7 +24,7 @@ router.post('/addProduct', async (req, res) => {
       let savedPhoto1 = null;
       if (photoUrl1) {
         const newId = uuidv4();
-        const path = `Images\\Product\\${newId}.jpg`;
+        const path = `Images\\Products\\${newId}.jpg`;
         const base64Image = photoUrl1.split(';base64,').pop();
         const binaryData = Buffer.from(base64Image, 'base64');
   
@@ -41,7 +41,7 @@ router.post('/addProduct', async (req, res) => {
       let savedPhoto2 = null;
       if (photoUrl2) {
         const newId = uuidv4();
-        const path = `Images\\Product\\${newId}.jpg`;
+        const path = `Images\\Products\\${newId}.jpg`;
         const base64Image = photoUrl2.split(';base64,').pop();
         const binaryData = Buffer.from(base64Image, 'base64');
   
@@ -126,7 +126,7 @@ router.get('/productList', async (req, res) => {
         res.json({ statusCode: 200, message:"success", result: { products: newarr } });
       }
       else {
-        res.json({ statusCode: 404, message: "Company not found" });
+        res.json({ statusCode: 404, message: "Product not found" });
       }
     }
     catch (err) {
@@ -175,8 +175,8 @@ router.get('/productById/:id', async (req, res) => {
 router.put('/updateProduct/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      const { productName, price, weight, description, categoryId, subCategoryId, companyId} = req.body;
-      const photoUrl = req.body.logoUrl;
+      const { productName, price, weight, description, categoryId, subCategoryId, companyId, photoUrl1, photoUrl2} = req.body;
+      // const photoUrl = req.body.logoUrl;
       let new_image;
       const companyExist = await companySchema.findOne({ _id: (id) })
       if (companyExist) {
@@ -184,7 +184,7 @@ router.put('/updateProduct/:id', async (req, res) => {
         let savedPhoto1 = null;
         if (photoUrl1) {
             const newId = uuidv4();
-            const path = `Images\\Product\\${newId}.jpg`;
+            const path = `Images\\Products\\${newId}.jpg`;
             const base64Image = photoUrl1.split(';base64,').pop();
             const binaryData = Buffer.from(base64Image, 'base64');
             
@@ -201,7 +201,7 @@ router.put('/updateProduct/:id', async (req, res) => {
         let savedPhoto2 = null;
         if (photoUrl2) {
             const newId = uuidv4();
-            const path = `Images\\Product\\${newId}.jpg`;
+            const path = `Images\\Products\\${newId}.jpg`;
             const base64Image = photoUrl2.split(';base64,').pop();
             const binaryData = Buffer.from(base64Image, 'base64');
             
