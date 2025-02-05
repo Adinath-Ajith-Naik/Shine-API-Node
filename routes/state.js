@@ -153,6 +153,30 @@ router.put('/UpdState/:id', async (req, res) => {
 });
 
 
+router.post('/testState', async (req, res) => {
+  try {
+    const { stateName, countryId } = req.body;
+    const isActive = true;
+    // Check if the state exists
+    console.log("Before Entering")
+    const stateExist = await stateSchema.findOne({ stateName, countryId });
+
+    if (stateExist) {
+      return res.json({ statusCode: 409, message: "State name already exists for this country" });
+    }else{
+      const result = await stateSchema.create({ stateName, countryId,isActive })
+      if (result._id) {
+        res.json({ statusCode: 200, result: { stateId: result._id, stateName, countryId,isActive } });
+      }
+      else {
+        res.json({ statusCode: 404, message: "State not found" });
+      }
+    }
+  } catch (err) {
+    res.json({ statusCode: 400, message: err.message });
+  }
+});
+
 
 // Delete state 
 router.put('/deleteState/:id', async (req, res) => {
