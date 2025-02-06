@@ -88,15 +88,15 @@ router.put('/updateState/:id', async (req, res) => {
       if (duplicateState) {
         return res.json({ statusCode: 409, message: "State name already exists for this country (DUPLICATE STATE) ------ CONDITION 1" });
       }
-      else{
-        const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName,countryId } })
-        if (result.modifiedCount === 0) {
-          res.json({ statusCode: 404, message: "State not found" });
-        }
-        else {
-          res.json({ statusCode: 200, result: { message: "State details updated" } });
-        }
+
+      const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName,countryId } })
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "State not found" });
       }
+      else {
+        res.json({ statusCode: 200, result: { message: "State details updated" } });
+      }
+      
     }
     else {
       res.json({ statusCode: 404, message: "State not found" });
@@ -159,56 +159,40 @@ router.put('/UpdState/:id', async (req, res) => {
   }
 });
 
-router.put('/test/:id', async (req, res) => {
+router.put('/US/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { stateName, countryId } = req.body;
 
-    // Check if the state exists
-    const stateExist = await stateSchema.findOne({ _id: id });
+    // Check if the combination already exists, excluding the current state being updated
+    const existingState = await stateSchema.findOne({
+      stateName,
+      countryId,
+      _id: { $ne: id }, // Exclude the current state by ID
+    });
 
-    if (!stateExist) {
-      return res.json({ statusCode: 404, message: "State not found" });
+    if (existingState) {
+      return res.status(400).json({ statusCode: 400, message: "State with this name already exists in the country." });
     }
 
-    // Condition 1: If the stateName already exists in the given countryId, do not update
-    const duplicateState = await stateSchema.findOne({ stateName, countryId });
+    // If no duplicate found, update the state
+    const updatedState = await stateSchema.findByIdAndUpdate(
+      id,
+      { $set: { stateName, countryId } },
+      { new: true } // Return the updated document
+    );
 
-    if (duplicateState) {
-      return res.json({ statusCode: 409, message: "State name already exists for this country (DUPLICATE STATE) ------ CONDITION 1" });
+    if (!updatedState) {
+      return res.status(404).json({ statusCode: 404, message: "State not found" });
     }
 
-    // Condition 2: If stateName does not exist under the given countryId, update it
-    if (stateExist.countryId === countryId) {
-      const result = await stateSchema.updateOne({ _id: id }, { $set: { stateName } });
-
-      if (result.modifiedCount === 0) {
-        return res.json({ statusCode: 304, message: "No changes made to the state" });
-      }
-
-      return res.json({ statusCode: 200, result: { message: "State details updated successfully ---- CONDITION 2" } });
-    }
-
-    // Condition 3: If countryId of the state is changed, verify stateName with new countryId
-    const newCountryStateExist = await stateSchema.findOne({ stateName, countryId });
-
-    if (newCountryStateExist) {
-      return res.json({ statusCode: 409, message: "State name already exists in the new country ---- CONDITION 3" });
-    }
-
-    // Update both stateName and countryId if stateName does not exist in the new country
-    const result = await stateSchema.updateOne({ _id: id }, { $set: { stateName, countryId } });
-
-    if (result.modifiedCount === 0) {
-      return res.json({ statusCode: 304, message: "No changes made to the state" });
-    }
-
-    return res.json({ statusCode: 200, result: { message: "State details updated successfully --- CONDITION 3" } });
+    res.json({ statusCode: 200, result: updatedState, message: "State updated successfully" });
 
   } catch (err) {
-    res.json({ statusCode: 400, message: err.message });
+    res.status(500).json({ statusCode: 500, message: err.message });
   }
 });
+
 
 
 // Delete state 
