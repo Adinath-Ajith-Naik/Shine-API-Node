@@ -7,13 +7,14 @@ const countrySchema = require('../models/country.models')
 router.post('/addState', async (req, res) => {
   try {
     const { stateName, countryId } = req.body;
-    const  isActive  = true;
+    const isActive = true;
+    // Check if the state exists
+    console.log("Before Entering")
+    const stateExist = await stateSchema.findOne({ stateName, countryId });
 
-    const stateExist = await stateSchema.findOne({ stateName: (stateName) })
     if (stateExist) {
-      res.json({ statusCode: 401, message: "State already exist" });
-    }
-    else {
+      return res.json({ statusCode: 409, message: "State name already exists for this country" });
+    }else{
       const result = await stateSchema.create({ stateName, countryId,isActive })
       if (result._id) {
         res.json({ statusCode: 200, result: { stateId: result._id, stateName, countryId,isActive } });
@@ -22,10 +23,8 @@ router.post('/addState', async (req, res) => {
         res.json({ statusCode: 404, message: "State not found" });
       }
     }
-  }
-  catch (err) {
-    console.log(err)
-    res.json({ statusCode: 400, message: err.message })
+  } catch (err) {
+    res.json({ statusCode: 400, message: err.message });
   }
 });
 
@@ -80,15 +79,23 @@ router.put('/updateState/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { stateName,countryId } = req.body;
-    const stateExist = await stateSchema.find({ _id: (id), countryId:(countryId) })
-    // const nameExist = await countrySchema.findOne({countryId : countryId});
+    const stateExist = await stateSchema.find({ _id: (id) })
+    
     if (stateExist) {
-      const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName,countryId } })
-      if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "State not found" });
+
+      const duplicateState = await stateSchema.findOne({ stateName, countryId });
+
+      if (duplicateState) {
+        return res.json({ statusCode: 409, message: "State name already exists for this country (DUPLICATE STATE) ------ CONDITION 1" });
       }
-      else {
-        res.json({ statusCode: 200, result: { message: "State details updated" } });
+      else{
+        const result = await stateSchema.updateOne({ _id: (id) }, { $set: { stateName,countryId } })
+        if (result.modifiedCount === 0) {
+          res.json({ statusCode: 404, message: "State not found" });
+        }
+        else {
+          res.json({ statusCode: 200, result: { message: "State details updated" } });
+        }
       }
     }
     else {
@@ -114,10 +121,10 @@ router.put('/UpdState/:id', async (req, res) => {
     }
 
     // Condition 1: If the stateName already exists in the given countryId, do not update
-    const duplicateState = await stateSchema.findOne({ stateName, countryId, _id: { $ne: id } });
+    const duplicateState = await stateSchema.findOne({ stateName, countryId });
 
     if (duplicateState) {
-      return res.json({ statusCode: 409, message: "State name already exists for this country" });
+      return res.json({ statusCode: 409, message: "State name already exists for this country (DUPLICATE STATE) ------ CONDITION 1" });
     }
 
     // Condition 2: If stateName does not exist under the given countryId, update it
@@ -128,14 +135,14 @@ router.put('/UpdState/:id', async (req, res) => {
         return res.json({ statusCode: 304, message: "No changes made to the state" });
       }
 
-      return res.json({ statusCode: 200, result: { message: "State details updated successfully" } });
+      return res.json({ statusCode: 200, result: { message: "State details updated successfully ---- CONDITION 2" } });
     }
 
     // Condition 3: If countryId of the state is changed, verify stateName with new countryId
     const newCountryStateExist = await stateSchema.findOne({ stateName, countryId });
 
     if (newCountryStateExist) {
-      return res.json({ statusCode: 409, message: "State name already exists in the new country" });
+      return res.json({ statusCode: 409, message: "State name already exists in the new country ---- CONDITION 3" });
     }
 
     // Update both stateName and countryId if stateName does not exist in the new country
@@ -145,33 +152,59 @@ router.put('/UpdState/:id', async (req, res) => {
       return res.json({ statusCode: 304, message: "No changes made to the state" });
     }
 
-    return res.json({ statusCode: 200, result: { message: "State details updated successfully" } });
+    return res.json({ statusCode: 200, result: { message: "State details updated successfully --- CONDITION 3" } });
 
   } catch (err) {
     res.json({ statusCode: 400, message: err.message });
   }
 });
 
-
-router.post('/testState', async (req, res) => {
+router.put('/test/:id', async (req, res) => {
   try {
+    const { id } = req.params;
     const { stateName, countryId } = req.body;
-    const isActive = true;
-    // Check if the state exists
-    console.log("Before Entering")
-    const stateExist = await stateSchema.findOne({ stateName, countryId });
 
-    if (stateExist) {
-      return res.json({ statusCode: 409, message: "State name already exists for this country" });
-    }else{
-      const result = await stateSchema.create({ stateName, countryId,isActive })
-      if (result._id) {
-        res.json({ statusCode: 200, result: { stateId: result._id, stateName, countryId,isActive } });
-      }
-      else {
-        res.json({ statusCode: 404, message: "State not found" });
-      }
+    // Check if the state exists
+    const stateExist = await stateSchema.findOne({ _id: id });
+
+    if (!stateExist) {
+      return res.json({ statusCode: 404, message: "State not found" });
     }
+
+    // Condition 1: If the stateName already exists in the given countryId, do not update
+    const duplicateState = await stateSchema.findOne({ stateName, countryId });
+
+    if (duplicateState) {
+      return res.json({ statusCode: 409, message: "State name already exists for this country (DUPLICATE STATE) ------ CONDITION 1" });
+    }
+
+    // Condition 2: If stateName does not exist under the given countryId, update it
+    if (stateExist.countryId === countryId) {
+      const result = await stateSchema.updateOne({ _id: id }, { $set: { stateName } });
+
+      if (result.modifiedCount === 0) {
+        return res.json({ statusCode: 304, message: "No changes made to the state" });
+      }
+
+      return res.json({ statusCode: 200, result: { message: "State details updated successfully ---- CONDITION 2" } });
+    }
+
+    // Condition 3: If countryId of the state is changed, verify stateName with new countryId
+    const newCountryStateExist = await stateSchema.findOne({ stateName, countryId });
+
+    if (newCountryStateExist) {
+      return res.json({ statusCode: 409, message: "State name already exists in the new country ---- CONDITION 3" });
+    }
+
+    // Update both stateName and countryId if stateName does not exist in the new country
+    const result = await stateSchema.updateOne({ _id: id }, { $set: { stateName, countryId } });
+
+    if (result.modifiedCount === 0) {
+      return res.json({ statusCode: 304, message: "No changes made to the state" });
+    }
+
+    return res.json({ statusCode: 200, result: { message: "State details updated successfully --- CONDITION 3" } });
+
   } catch (err) {
     res.json({ statusCode: 400, message: err.message });
   }
