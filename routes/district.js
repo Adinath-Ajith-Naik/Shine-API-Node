@@ -10,7 +10,7 @@ router.post('/addDistrict', async (req, res) => {
     const { districtName, countryId,stateId } = req.body;
     const  isActive  = true;
 
-    const nameExist = await districtSchema.findOne({ districtName: (districtName) })
+    const nameExist = await districtSchema.findOne({districtName, stateId, countryId})
     if (nameExist) {
       res.json({ statusCode: 401, message: "District already exist" });
     }
@@ -101,6 +101,41 @@ router.put('/district/:id', async (req, res) => {
   }
   catch (err) {
     res.json({ statusCode: 400, message: err.message })
+  }
+});
+
+router.put('/updateDistrict/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { districtName,stateId, countryId } = req.body;
+
+    // Check if the combination already exists, excluding the current state being updated
+    const existingDistrict = await stateSchema.findOne({
+      districtName,
+      stateId,
+      countryId,
+      _id: { $ne: id }, // Exclude the current state by ID
+    });
+
+    if (existingDistrict) {
+      return res.json({ statusCode: 400, message: "District with this name already exists!!." });
+    }
+
+    // If no duplicate found, update the state
+    const updatedDistrict = await stateSchema.findByIdAndUpdate(
+      id,
+      { $set: { districtName,stateId, countryId } },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedDistrict) {
+      return res.json({ statusCode: 404, message: "District not found" });
+    }
+
+    res.json({ statusCode: 200, result: updatedState, message: "District updated successfully" });
+
+  } catch (err) {
+    res.status(500).json({ statusCode: 500, message: err.message });
   }
 });
 

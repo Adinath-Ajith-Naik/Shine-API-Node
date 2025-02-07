@@ -9,7 +9,6 @@ router.post('/addState', async (req, res) => {
     const { stateName, countryId } = req.body;
     const isActive = true;
     // Check if the state exists
-    console.log("Before Entering")
     const stateExist = await stateSchema.findOne({ stateName, countryId });
 
     if (stateExist) {
@@ -108,8 +107,6 @@ router.put('/updateState/:id', async (req, res) => {
     res.status(500).json({ statusCode: 500, message: err.message });
   }
 });
-
-
 
 // Delete state 
 router.put('/deleteState/:id', async (req, res) => {
