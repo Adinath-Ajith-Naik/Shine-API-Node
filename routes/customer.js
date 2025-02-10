@@ -78,7 +78,7 @@ router.get('/customerById/:id', async (req, res) => {
       const { id } = req.params;
       const customer = await customerSchema.findOne({ _id: (id) })
       if (customer) {
-            let newarr = [];
+         
             
             let country = await countrySchema.findOne({ _id: customer.countryId });
             let state = await stateSchema.findOne({ _id: customer.stateId });
@@ -98,10 +98,10 @@ router.get('/customerById/:id', async (req, res) => {
               pincode : customer.pincode,
               isActive: customer.isActive
             }
-            newarr.push(temp);
+            
         
-            console.log(newarr);
-            res.json({ statusCode: 200, message:"success", result: { customers: newarr } });
+           
+            res.json({ statusCode: 200, message:"success", result: { customers: temp } });
           }
       else {
         res.json({ statusCode: 404, message: "Customer Not found" });
