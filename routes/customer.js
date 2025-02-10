@@ -73,30 +73,30 @@ router.get('/customerList', async (req, res) => {
 router.get('/customerById/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      const customers = await customerSchema.findOne({ _id: (id) })
-      if (customers) {
+      const customer = await customerSchema.findOne({ _id: (id) })
+      if (customer) {
             let newarr = [];
-            for (const element of customers) {
-              let country = await countrySchema.findOne({ _id: element.countryId });
-              let state = await stateSchema.findOne({ _id: element.stateId });
-              let district = await districtSchema.findOne({_id: element.districtId});
-              let temp = {
-                _id: element._id,
-                countryId : element.countryId,
-                stateId : element.stateId,
-                districtId : element.districtId,
-                districtName: district.districtName,
-                stateName: state.stateName,
-                countryName: country.countryName,
-                name : element.name,
-                email : element.email,
-                mobileNo : element.mobileNo,
-                address : element.address,
-                pincode : element.pincode,
-                isActive: element.isActive
-              }
-              newarr.push(temp);
+            
+            let country = await countrySchema.findOne({ _id: customer.countryId });
+            let state = await stateSchema.findOne({ _id: customer.stateId });
+            let district = await districtSchema.findOne({_id: customer.districtId});
+            let temp = {
+              _id: customer._id,
+              countryId : customer.countryId,
+              stateId : customer.stateId,
+              districtId : customer.districtId,
+              districtName: district.districtName,
+              stateName: state.stateName,
+              countryName: country.countryName,
+              name : customer.name,
+              email : customer.email,
+              mobileNo : customer.mobileNo,
+              address : customer.address,
+              pincode : customer.pincode,
+              isActive: customer.isActive
             }
+            newarr.push(temp);
+        
             console.log(newarr);
             res.json({ statusCode: 200, message:"success", result: { customers: newarr } });
           }
