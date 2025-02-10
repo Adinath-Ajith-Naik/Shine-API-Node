@@ -9,6 +9,7 @@ const schema={
     countryId : String,
     stateId : String, 
     districtId : String, 
+    isActive : Boolean,
 };
 
 const collectionName = "customer";

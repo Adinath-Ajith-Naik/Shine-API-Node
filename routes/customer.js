@@ -36,6 +36,7 @@ router.get('/customerList', async (req, res) => {
       if (customers) {
             let newarr = [];
             for (const element of customers) {
+              console.log("Inside FOR Loop");
               let country = await countrySchema.findOne({ _id: element.countryId });
               let state = await stateSchema.findOne({ _id: element.stateId });
               let district = await districtSchema.findOne({_id: element.districtId});
@@ -55,8 +56,10 @@ router.get('/customerList', async (req, res) => {
                 isActive: element.isActive
               }
               newarr.push(temp);
+              console.log("-----------------------------")
               console.log(temp);
             }
+            console.log("Hiiiiii")
             console.log(newarr);
             res.json({ statusCode: 200, message:"success", result: { customers: newarr } });
           }
