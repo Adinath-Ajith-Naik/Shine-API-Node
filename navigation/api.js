@@ -16,6 +16,7 @@ const statusRouter = require('../routes/status');
 const paymentRouter = require('../routes/payment');
 const imgRouter = require('../image');
 const productRouter = require('../routes/products');
+const orderRouter = require('../routes/order');
 
 const app = express();
 // app.use(cors({
@@ -43,6 +44,7 @@ app.use('/apiV1',statusRouter);
 app.use('/apiV1',paymentRouter);
 app.use('/apiv1', imgRouter);
 app.use('/apiV1',productRouter);
+app.use('/apiV1',orderRouter);
 
 
 

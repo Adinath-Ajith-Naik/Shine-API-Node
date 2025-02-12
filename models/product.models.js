@@ -2,7 +2,7 @@ const mongoose = require('../database');
 
 const schema = {
     productName : String, 
-    price : String,
+    price : Number,
     categoryId : String, 
     subCategoryId : String,
     companyId : String, 
