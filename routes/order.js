@@ -18,10 +18,12 @@ router.post('/addOrder', async (req, res) => {
         const orderDate = new Date();
 
         if (orderDetails && orderDetails.length > 0) {
-            total_value = 0; // Start from 0
-            for (let detail of orderDetails) {
-                total_value += detail.amount * detail.quantity; // Add each item's total
-            }
+          
+          total_value = 0; // Start from 0
+          for (let detail of orderDetails) {
+              let product = await productSchema.findOne({_id:detail.productId})
+              total_value += product.price * detail.quantity; // Add each item's total
+          }
         }
 
         const newOrder = new orderSchema({
@@ -30,24 +32,30 @@ router.post('/addOrder', async (req, res) => {
 
         const savedOrder = await newOrder.save();
 
-        if(orderDetails && orderDetails.length > 0){
-            const detailsToInsert = orderDetails.map(detail=>({
-                orderId : savedOrder._id,
-                productId : detail.productId,
-                quantity : detail.quantity,
-                amount : detail.amount,
-                total : detail.amount * detail.quantity,
-                // total : detail.total,
-                isActive : true,
-            }));
-            
-            
-            await orderDetailsSchema.insertMany(detailsToInsert)
-        }
+        
 
+        if (orderDetails && orderDetails.length > 0) {
+          const productDetails = await Promise.all(
+              orderDetails.map(async (detail) => {
+                  const product = await productSchema.findOne({ _id: detail.productId });
+                  return {
+                      orderId: savedOrder._id,
+                      productId: detail.productId,
+                      quantity: detail.quantity,
+                      amount : product.price ,
+                      total: product ? product.price * detail.quantity:0,// Ensure product exists before accessing price
+                      isActive: true,
+                  };
+              })
+          );
+      
+          await orderDetailsSchema.insertMany(productDetails);
+        }
         res.json({statusCode :200, message:"Order Created Successfully", orderId: savedOrder._id, total:total_value});
+    // res.json({statusCode :200, message:"Order Created Successfully", orderId: savedOrder._id});
     
-    } catch (err) {
+    } 
+    catch (err) {
       res.json({ statusCode: 400, message: err.message });
     }
 });
@@ -127,12 +135,124 @@ router.get('/orderById/:id', async (req, res) => {
 });
 
 // Delete Order
+router.get('/deleteOrder/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const isActive = false;
+    const orderExist = await orderSchema.findOne({ _id: (id) })
+    if (orderExist) {
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{isActive}});
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "Order not found" });
+      }
+      else {
+        res.json({ statusCode: 200, result: { message: "Order deleted" } });
+      }
+    }
+    else {
+      res.json({ statusCode: 404, message: "Order not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
 
-// Get Orders With Order Details
+// Get OrderDetails With Order ID
+router.get('/orderDetailsByorderId/:orderId', async (req, res) => {
+  try {
+    const {orderId} = req.params;
+    let orderDetails = await orderDetailsSchema.find({ orderId: (orderId) });
+    if (orderDetails) {
+          let newarr = [];
+          for (const element of orderDetails) {
+            let product = await productSchema.findOne({ _id: element.productId });
+            let order = await orderSchema.findOne({_id: element.orderId});
+            let temp = {
+              _id: element._id,
+              productId : element.productId,
+              orderId : element.orderId,
+              productName : product.productName,
+              quantity : element.quantity,
+              amount: element.amount,
+              total : element.total,
+              isActive: element.isActive
+            }
+            newarr.push(temp);
+            console.log(temp);
+          }
+          console.log(newarr);
+          res.json({ statusCode: 200, message:"success", result: { orderDetails: newarr } });
+        }
+    else {
+      res.json({ statusCode: 404, message: "Order Details not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
 
-// Get single order details
+// Get Order and OrderDetails by OrderId
+router.get('/orderAndDetails/:id', async (req, res) => {
+  try {
+      const { id } = req.params;
+      let newarr = [];
+      let order = await orderSchema.findOne({ _id: (id) })
+      if (order) {
+          let customer = await customerSchema.findOne({ _id: order.customerId });
+          let status = await statusSchema.findOne({ _id: order.statusId });
+          let payment = await paymentSchema.findOne({_id: order.paymentTypeId});
+            let temp = {
+                _id: order._id,
+                customerId : order.customerId,
+                statusId : order.statusId,
+                paymentTypeId : order.paymentTypeId,
+                customerName: customer.name,
+                statusName: status.statusName,
+                paymentName: payment.paymentName,
+                total : order.total,
+                remarks : order.remarks,
+                orderDate : order.orderDate,
+                deliveryDate : order.deliveryDate,
+                isActive: order.isActive
+            }
+              
+            let orderDetails = await orderDetailsSchema.find({ orderId: (id) });
+            if (orderDetails) {
+   
+            for (const element of orderDetails) {
+              let product = await productSchema.findOne({ _id: element.productId });
+              let order = await orderSchema.findOne({_id: element.orderId});
+              let temp = {
+                _id: element._id,
+                productId : element.productId,
+                orderId : element.orderId,
+                productName : product.productName,
+                quantity : element.quantity,
+                amount: element.amount,
+                total : element.total,
+                isActive: element.isActive
+              }
+              newarr.push(temp);
+              console.log(temp);
+            }
+          // console.log(newarr);
+          // res.json({ statusCode: 200, message:"success", result: { orderDetails: newarr } });
+        }
 
-// Get Single Order along with Details
+
+
+        res.json({ statusCode: 200, message:"Success Order and Details", result: { order: temp, orderDetails : newarr } });
+      }
+      else {
+          res.json({ statusCode: 404, message: "Orders not found" });
+      }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
 
 
 module.exports = router;
