@@ -78,8 +78,6 @@ router.get('/customerById/:id', async (req, res) => {
       const { id } = req.params;
       const customer = await customerSchema.findOne({ _id: (id) })
       if (customer) {
-         
-            
             let country = await countrySchema.findOne({ _id: customer.countryId });
             let state = await stateSchema.findOne({ _id: customer.stateId });
             let district = await districtSchema.findOne({_id: customer.districtId});
