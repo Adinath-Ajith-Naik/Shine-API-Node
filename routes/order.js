@@ -13,9 +13,14 @@ const { v4: uuidv4 } = require('uuid');
 router.post('/addOrder', async (req, res) => {
     try {
         var total_value = 0;
-        const { customerId,total,statusId,paymentTypeId, remarks, deliveryDate, orderDetails } = req.body;
+        const { customerId,statusId,paymentTypeId, remarks, deliveryDate, orderDetails } = req.body;
         const isActive = true;
-        const orderDate = new Date();
+        // const orderDate = new Date();
+
+        const moment  = require('moment');
+
+        const currentDate = moment();
+        const orderDate = currentDate.format('DD-MM-YYYY');
 
         if (orderDetails && orderDetails.length > 0) {
           
@@ -248,6 +253,55 @@ router.get('/orderAndDetails/:id', async (req, res) => {
       else {
           res.json({ statusCode: 404, message: "Orders not found" });
       }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
+// Update the order status
+router.put('/updateOrderStatus/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {statusId} = req.body;
+    const orderExist = await orderSchema.findOne({ _id: (id) })
+    if (orderExist) {
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId}});
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "Order not found" });
+      }
+      else {
+        res.json({ statusCode: 200, result: { message: "Order Status Updated !!" } });
+      }
+    }
+    else {
+      res.json({ statusCode: 404, message: "Order not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
+// Update the order status
+router.put('/acceptOrder/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const statusId = "673626631da86f57e77d973f";
+    const {deliveryDate} = req.body;
+    const orderExist = await orderSchema.findOne({ _id: (id) })
+    if (orderExist) {
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate}});
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "Order not found" });
+      }
+      else {
+        res.json({ statusCode: 200, result: { message: "Order Accepted !!" } });
+      }
+    }
+    else {
+      res.json({ statusCode: 404, message: "Order not found" });
+    }
   }
   catch (err) {
     res.json({ statusCode: 400, message: err.message })
