@@ -151,7 +151,7 @@ router.get('/productById/:id', async (req, res) => {
           categoryName: category.categoryName,
           subCategoryName: subCategory.subCategoryName,
           companyName: company.companyName,
-          name : product.name,
+          name : product.productName,
           price : product.price,
           description : product.description,
           weight : product.weight,
