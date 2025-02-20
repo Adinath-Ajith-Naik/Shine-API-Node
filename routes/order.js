@@ -8,6 +8,7 @@ const paymentSchema = require('../models/payment.models');
 const productSchema = require('../models/product.models');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const moment  = require('moment');
 
 // Create New Order
 router.post('/addOrder', async (req, res) => {
@@ -15,12 +16,11 @@ router.post('/addOrder', async (req, res) => {
         var total_value = 0;
         const { customerId,statusId,paymentTypeId, remarks, deliveryDate, orderDetails } = req.body;
         const isActive = true;
-        // const orderDate = new Date();
+        const orderDate = new Date();
 
-        const moment  = require('moment');
-
-        const currentDate = moment();
-        const orderDate = currentDate.format('DD-MM-YYYY');
+       
+        // const currentDate = moment();
+        // let orderDate = moment(currentDate).format('DD-MM-YYYY');
 
         if (orderDetails && orderDetails.length > 0) {
           
@@ -76,6 +76,10 @@ router.get('/orderList', async (req, res) => {
               let customer = await customerSchema.findOne({ _id: element.customerId });
               let status = await statusSchema.findOne({ _id: element.statusId });
               let payment = await paymentSchema.findOne({_id: element.paymentTypeId});
+
+              let Order_date = moment(element.orderDate).format('DD-MM-YYYY');
+              let Del_date = moment(element.deliveryDate).format('DD-MM-YYYY');
+
               let temp = {
                 _id: element._id,
                 customerId : element.customerId,
@@ -86,8 +90,8 @@ router.get('/orderList', async (req, res) => {
                 paymentName: payment.paymentName,
                 total : element.total,
                 remarks : element.remarks,
-                orderDate : element.orderDate,
-                deliveryDate : element.deliveryDate,
+                orderDate : Order_date,
+                deliveryDate :Del_date ,
                 isActive: element.isActive
               }
               newarr.push(temp);
@@ -114,6 +118,10 @@ router.get('/orderById/:id', async (req, res) => {
                 let customer = await customerSchema.findOne({ _id: order.customerId });
                 let status = await statusSchema.findOne({ _id: order.statusId });
                 let payment = await paymentSchema.findOne({_id: order.paymentTypeId});
+
+                let Order_date = moment(order.orderDate).format('DD-MM-YYYY');
+                let Del_date = moment(order.deliveryDate).format('DD-MM-YYYY');
+              
                 let temp = {
                     _id: order._id,
                     customerId : order.customerId,
@@ -124,8 +132,8 @@ router.get('/orderById/:id', async (req, res) => {
                     paymentName: payment.paymentName,
                     total : order.total,
                     remarks : order.remarks,
-                    orderDate : order.orderDate,
-                    deliveryDate : order.deliveryDate,
+                    orderDate : Order_date,
+                    deliveryDate : Del_date,
                     isActive: order.isActive
                 }
                 res.json({ statusCode: 200, message:"success", result: { order: temp } });
@@ -208,7 +216,12 @@ router.get('/orderAndDetails/:id', async (req, res) => {
           let customer = await customerSchema.findOne({ _id: order.customerId });
           let status = await statusSchema.findOne({ _id: order.statusId });
           let payment = await paymentSchema.findOne({_id: order.paymentTypeId});
-            let temp = {
+
+          let Order_date = moment(order.orderDate).format('DD-MM-YYYY');
+          let Del_date = moment(order.deliveryDate).format('DD-MM-YYYY');
+
+
+          let temp = {
                 _id: order._id,
                 customerId : order.customerId,
                 statusId : order.statusId,
@@ -218,13 +231,13 @@ router.get('/orderAndDetails/:id', async (req, res) => {
                 paymentName: payment.paymentName,
                 total : order.total,
                 remarks : order.remarks,
-                orderDate : order.orderDate,
-                deliveryDate : order.deliveryDate,
+                orderDate : Order_date,
+                deliveryDate : Del_date,
                 isActive: order.isActive
-            }
+          }
               
-            let orderDetails = await orderDetailsSchema.find({ orderId: (id) });
-            if (orderDetails) {
+          let orderDetails = await orderDetailsSchema.find({ orderId: (id) });
+          if (orderDetails) {
    
             for (const element of orderDetails) {
               let product = await productSchema.findOne({ _id: element.productId });
