@@ -235,6 +235,14 @@ router.get('/orderAndDetails/:id', async (req, res) => {
                 deliveryDate : Del_date,
                 isActive: order.isActive
           }
+
+          let customerData = {
+            Name : customer.name,
+            Email : customer.email,
+            Contact : customer.mobileNo,
+            Address : customer.address,
+            Pincode : customer.pincode,
+          }
               
           let orderDetails = await orderDetailsSchema.find({ orderId: (id) });
           if (orderDetails) {
@@ -261,7 +269,7 @@ router.get('/orderAndDetails/:id', async (req, res) => {
 
 
 
-        res.json({ statusCode: 200, message:"Success Order and Details", result: { order: temp, orderDetails : newarr } });
+        res.json({ statusCode: 200, message:"Success Order and Details", result: { order: temp, orderDetails : newarr, customer:customerData } });
       }
       else {
           res.json({ statusCode: 404, message: "Orders not found" });
