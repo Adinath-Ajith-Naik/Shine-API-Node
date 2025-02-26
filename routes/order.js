@@ -14,7 +14,7 @@ const moment  = require('moment');
 router.post('/addOrder', async (req, res) => {
     try {
         var total_value = 0;
-        const { customerId,statusId,paymentTypeId, remarks, deliveryDate, orderDetails } = req.body;
+        const { customerId,statusId,paymentTypeId, customerRemarks, deliveryDate, orderDetails } = req.body;
         const isActive = true;
         const orderDate = new Date();
 
@@ -32,7 +32,7 @@ router.post('/addOrder', async (req, res) => {
         }
 
         const newOrder = new orderSchema({
-            customerId, total:total_value ,statusId, paymentTypeId, remarks, orderDate, deliveryDate, isActive
+            customerId, total:total_value ,statusId, paymentTypeId, customerRemarks, orderDate, deliveryDate, isActive
         });
 
         const savedOrder = await newOrder.save();
@@ -89,7 +89,7 @@ router.get('/orderList', async (req, res) => {
                 statusName: status.statusName,
                 paymentName: payment.paymentName,
                 total : element.total,
-                remarks : element.remarks,
+                customerRemarks : element.customerRemarks,
                 orderDate : Order_date,
                 deliveryDate :Del_date ,
                 isActive: element.isActive
@@ -131,7 +131,7 @@ router.get('/orderById/:id', async (req, res) => {
                     statusName: status.statusName,
                     paymentName: payment.paymentName,
                     total : order.total,
-                    remarks : order.remarks,
+                    customerRemarks : order.customerRemarks,
                     orderDate : Order_date,
                     deliveryDate : Del_date,
                     isActive: order.isActive
@@ -230,7 +230,7 @@ router.get('/orderAndDetails/:id', async (req, res) => {
                 statusName: status.statusName,
                 paymentName: payment.paymentName,
                 total : order.total,
-                remarks : order.remarks,
+                customerRemarks : order.customerRemarks,
                 orderDate : Order_date,
                 deliveryDate : Del_date,
                 isActive: order.isActive
@@ -284,10 +284,10 @@ router.get('/orderAndDetails/:id', async (req, res) => {
 router.put('/updateOrderStatus/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const {statusId} = req.body;
+    const {statusId,deliveryDate,adminRemarks} = req.body;
     const orderExist = await orderSchema.findOne({ _id: (id) })
     if (orderExist) {
-      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId}});
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Order not found" });
       }
@@ -304,6 +304,57 @@ router.put('/updateOrderStatus/:id', async (req, res) => {
   }
 });
 
+router.put('/cancelOrder/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {adminRemarks} = req.body;
+    const statusId = "67bf462e1cda1de741312dc3"
+    const orderExist = await orderSchema.findOne({ _id: (id) })
+    if (orderExist) {
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, adminRemarks}});
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "Order not found" });
+      }
+      else {
+        res.json({ statusCode: 200, result: { message: "Order Cancelled !!" } });
+      }
+    }
+    else {
+      res.json({ statusCode: 404, message: "Order not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
+// Get Order Statuses for Approval State
+router.get('/getOrderStatus/:id', async (req, res) => {
+  try {
+    const {id} = req.params;
+    let order = await orderSchema.findOne({ _id: (id) });
+    if (order) {
+          let status = await statusSchema.findOne({ _id: order.statusId });
+
+          if (order.statusId  == "673626581da86f57e77d973c"){
+            res.json({ statusCode: 200, message:"Success", result: { orderStatus:  1 } });
+          }else if(order.statusId  == "67bf462e1cda1de741312dc3"){
+            res.json({ statusCode: 200, message:"Success", result: { orderStatus:  2 } });
+          }else{
+            res.json({ statusCode: 200, message:"Success", result: { orderStatus:  3 } });
+          }
+
+          // res.json({ statusCode: 200, message:"Success", result: { orderStatus:  status.statusName } });
+        }
+    else {
+      res.json({ statusCode: 404, message: "Order Status not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
 // Update the order status
 router.put('/acceptOrder/:id', async (req, res) => {
   try {
@@ -312,7 +363,7 @@ router.put('/acceptOrder/:id', async (req, res) => {
     const {deliveryDate} = req.body;
     const orderExist = await orderSchema.findOne({ _id: (id) })
     if (orderExist) {
-      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate}});
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Order not found" });
       }

@@ -5,7 +5,8 @@ const schema = {
     total : Number,
     statusId : String, 
     paymentTypeId: String, 
-    remarks : String,
+    customerRemarks : String,
+    adminRemarks: String, 
     orderDate : Date,
     deliveryDate : Date,
     isActive : Boolean
