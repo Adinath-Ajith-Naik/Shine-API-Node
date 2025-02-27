@@ -387,7 +387,7 @@ router.put('/acceptOrder/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const statusId = "673626631da86f57e77d973f";
-    const {deliveryDate} = req.body;
+    const {deliveryDate, adminRemarks} = req.body;
     const orderExist = await orderSchema.findOne({ _id: (id) })
     if (orderExist) {
       const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
