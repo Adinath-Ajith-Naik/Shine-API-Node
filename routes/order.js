@@ -9,6 +9,7 @@ const productSchema = require('../models/product.models');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const moment  = require('moment');
+const { log } = require('console');
 
 // Create New Order
 router.post('/addOrder', async (req, res) => {
@@ -90,6 +91,7 @@ router.get('/orderList', async (req, res) => {
                 paymentName: payment.paymentName,
                 total : element.total,
                 customerRemarks : element.customerRemarks,
+                adminRemarks : element.adminRemarks,
                 orderDate : Order_date,
                 deliveryDate :Del_date ,
                 isActive: element.isActive
@@ -132,6 +134,7 @@ router.get('/orderById/:id', async (req, res) => {
                     paymentName: payment.paymentName,
                     total : order.total,
                     customerRemarks : order.customerRemarks,
+                    adminRemarks : order.adminRemarks,
                     orderDate : Order_date,
                     deliveryDate : Del_date,
                     isActive: order.isActive
@@ -231,6 +234,7 @@ router.get('/orderAndDetails/:id', async (req, res) => {
                 paymentName: payment.paymentName,
                 total : order.total,
                 customerRemarks : order.customerRemarks,
+                adminRemarks : order.adminRemarks,
                 orderDate : Order_date,
                 deliveryDate : Del_date,
                 isActive: order.isActive
@@ -288,6 +292,29 @@ router.put('/updateOrderStatus/:id', async (req, res) => {
     const orderExist = await orderSchema.findOne({ _id: (id) })
     if (orderExist) {
       const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
+      if (result.modifiedCount === 0) {
+        res.json({ statusCode: 404, message: "Order not found" });
+      }
+      else {
+        res.json({ statusCode: 200, result: { message: "Order Status Updated !!" } });
+      }
+    }
+    else {
+      res.json({ statusCode: 404, message: "Order not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
+router.put('/test/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {statusId} = req.body;
+    const orderExist = await orderSchema.findOne({ _id: (id) })
+    if (orderExist) {
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId}});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Order not found" });
       }
