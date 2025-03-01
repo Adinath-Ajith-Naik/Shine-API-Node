@@ -10,6 +10,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const moment  = require('moment');
 const { log } = require('console');
+// const generateOrderNumber = require("../orderCounter");
 
 // Create New Order
 router.post('/addOrder', async (req, res) => {
@@ -19,6 +20,7 @@ router.post('/addOrder', async (req, res) => {
         const isActive = true;
         const orderDate = new Date();
 
+        // const orderNumber = await generateOrderNumber();
        
         // const currentDate = moment();
         // let orderDate = moment(currentDate).format('DD-MM-YYYY');

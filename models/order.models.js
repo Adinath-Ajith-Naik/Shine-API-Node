@@ -13,7 +13,8 @@ const schema = {
     deliveryDate : Date,
     packingDate : Date,
     transportDate : Date,
-    isActive : Boolean
+    isActive : Boolean,
+    orderNumber : String, 
 
   };
   
