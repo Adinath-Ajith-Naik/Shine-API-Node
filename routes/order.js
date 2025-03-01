@@ -15,7 +15,7 @@ const { log } = require('console');
 router.post('/addOrder', async (req, res) => {
     try {
         var total_value = 0;
-        const { customerId,statusId,paymentTypeId, customerRemarks, deliveryDate, orderDetails } = req.body;
+        const { customerId,statusId,paymentTypeId, customerRemarks, orderDetails } = req.body;
         const isActive = true;
         const orderDate = new Date();
 
@@ -33,7 +33,7 @@ router.post('/addOrder', async (req, res) => {
         }
 
         const newOrder = new orderSchema({
-            customerId, total:total_value ,statusId, paymentTypeId, customerRemarks, orderDate, deliveryDate, isActive
+            customerId, total:total_value ,statusId, paymentTypeId, customerRemarks, orderDate, isActive
         });
 
         const savedOrder = await newOrder.save();
@@ -221,7 +221,33 @@ router.get('/orderAndDetails/:id', async (req, res) => {
           let payment = await paymentSchema.findOne({_id: order.paymentTypeId});
 
           let Order_date = moment(order.orderDate).format('DD-MM-YYYY');
-          let Del_date = moment(order.deliveryDate).format('DD-MM-YYYY');
+
+          let Exp_Del_date = null;
+          let Acc_date = null;
+          let Pack_date = null;
+          let Trans_date = null;
+          let Del_date = null;
+
+
+          if(order.expectedDeliveryDate){
+            Exp_Del_date = moment(order.expectedDeliveryDate).format('DD-MM-YYYY');
+          }
+          
+          if(order.orderAcceptDate){
+            Acc_date = moment(order.orderAcceptDate).format('DD-MM-YYYY');
+          }
+
+          if(order.packingDate){
+            Pack_date = moment(order.packingDate).format('DD-MM-YYYY');
+          }
+
+          if(order.transportDate){
+            Trans_date = moment(order.transportDate).format('DD-MM-YYYY');
+          }
+
+          if(order.deliveryDate){
+            Del_date = moment(order.deliveryDate).format('DD-MM-YYYY');
+          }
 
 
           let temp = {
@@ -236,6 +262,10 @@ router.get('/orderAndDetails/:id', async (req, res) => {
                 customerRemarks : order.customerRemarks,
                 adminRemarks : order.adminRemarks,
                 orderDate : Order_date,
+                expectedDeliveryDate : Exp_Del_date,
+                orderAcceptDate : Acc_date,
+                packingDate : Pack_date,
+                transportDate : Trans_date,
                 deliveryDate : Del_date,
                 isActive: order.isActive
           }
@@ -285,18 +315,68 @@ router.get('/orderAndDetails/:id', async (req, res) => {
 });
 
 // Update the order status
+// router.put('/updateOrderStatus/:id', async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const {statusId,deliveryDate,adminRemarks} = req.body;
+//     const orderExist = await orderSchema.findOne({ _id: (id) })
+//     if (orderExist) {
+//       const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
+//       if (result.modifiedCount === 0) {
+//         res.json({ statusCode: 404, message: "Order not found" });
+//       }
+//       else {
+//         res.json({ statusCode: 200, result: { message: "Order Status Updated !!" } });
+//       }
+//     }
+//     else {
+//       res.json({ statusCode: 404, message: "Order not found" });
+//     }
+//   }
+//   catch (err) {
+//     res.json({ statusCode: 400, message: err.message })
+//   }
+// });
+
+// ----------------------------------------------------------
+
+// Update the order status
 router.put('/updateOrderStatus/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const {statusId,deliveryDate,adminRemarks} = req.body;
+    const {statusId} = req.body;
     const orderExist = await orderSchema.findOne({ _id: (id) })
     if (orderExist) {
-      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
-      if (result.modifiedCount === 0) {
-        res.json({ statusCode: 404, message: "Order not found" });
+
+      if(statusId == "673626751da86f57e77d9742"){
+        const packingDate = new Date();
+        const result = await orderSchema.updateOne({_id : (id)},{$set:{statusId, packingDate}});
+        if (result.modifiedCount === 0) {
+          res.json({ statusCode: 404, message: "Order not found" });
+        }
+        else {
+          res.json({ statusCode: 200, result: { message: "Order Status (Packing) Updated !!" } });
+        }
       }
-      else {
-        res.json({ statusCode: 200, result: { message: "Order Status Updated !!" } });
+      else if(statusId == "673626851da86f57e77d9745" ){
+        const transportDate = new Date();
+        const result = await orderSchema.updateOne({_id : (id)},{$set:{statusId, transportDate}});
+        if (result.modifiedCount === 0) {
+          res.json({ statusCode: 404, message: "Order not found" });
+        }
+        else {
+          res.json({ statusCode: 200, result: { message: "Order Status (Transportation) Updated !!" } });
+        }
+      }
+      else if(statusId == "673626901da86f57e77d9748" ){
+        const deliveryDate = new Date();
+        const result = await orderSchema.updateOne({_id : (id)},{$set:{statusId, deliveryDate}});
+        if (result.modifiedCount === 0) {
+          res.json({ statusCode: 404, message: "Order not found" });
+        }
+        else {
+          res.json({ statusCode: 200, result: { message: "Order Status (Delivery) Updated !!" } });
+        }
       }
     }
     else {
@@ -308,6 +388,9 @@ router.put('/updateOrderStatus/:id', async (req, res) => {
   }
 });
 
+// ----------------------------------------------------------
+
+// Status Changingggg
 router.put('/test/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -367,11 +450,11 @@ router.get('/getOrderStatus/:id', async (req, res) => {
             res.json({ statusCode: 200, message:"Success", result: { orderStatus:  1 } });
           }else if(order.statusId  == "67bf462e1cda1de741312dc3"){
             res.json({ statusCode: 200, message:"Success", result: { orderStatus:  2 } });
-          }else{
+          }else if(order.statusId == "673626631da86f57e77d973f" || order.statusId == "673626751da86f57e77d9742" || order.statusId == "673626851da86f57e77d9745"){
             res.json({ statusCode: 200, message:"Success", result: { orderStatus:  3 } });
+          }else{
+            res.json({ statusCode: 200, message:"Success", result: { orderStatus:  4 } });
           }
-
-          // res.json({ statusCode: 200, message:"Success", result: { orderStatus:  status.statusName } });
         }
     else {
       res.json({ statusCode: 404, message: "Order Status not found" });
@@ -387,10 +470,16 @@ router.put('/acceptOrder/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const statusId = "673626631da86f57e77d973f";
-    const {deliveryDate, adminRemarks} = req.body;
+    const {expectedDeliveryDate, adminRemarks} = req.body;
+    const orderAcceptDate = new Date();
+
+    // deliveryDate = deliveryDate.toISOString();
+    // console.log("//////////////////");
+    // console.log("Delivery Date : ", deliveryDate);
+    // console.log("//////////////////");
     const orderExist = await orderSchema.findOne({ _id: (id) })
     if (orderExist) {
-      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
+      const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, expectedDeliveryDate, adminRemarks, orderAcceptDate}});
       if (result.modifiedCount === 0) {
         res.json({ statusCode: 404, message: "Order not found" });
       }

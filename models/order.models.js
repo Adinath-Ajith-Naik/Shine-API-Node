@@ -8,7 +8,11 @@ const schema = {
     customerRemarks : String,
     adminRemarks: String, 
     orderDate : Date,
+    orderAcceptDate : Date,
+    expectedDeliveryDate : Date,
     deliveryDate : Date,
+    packingDate : Date,
+    transportDate : Date,
     isActive : Boolean
 
   };
