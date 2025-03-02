@@ -16,15 +16,13 @@ const { log } = require('console');
 router.post('/addOrder', async (req, res) => {
     try {
         var total_value = 0;
-        const { customerId,statusId,paymentTypeId, customerRemarks, orderDetails } = req.body;
+        const statusId = "673626581da86f57e77d973c";
+        const { customerId,paymentTypeId, customerRemarks, orderDetails } = req.body;
         const isActive = true;
         const orderDate = new Date();
 
         // const orderNumber = await generateOrderNumber();
        
-        // const currentDate = moment();
-        // let orderDate = moment(currentDate).format('DD-MM-YYYY');
-
         if (orderDetails && orderDetails.length > 0) {
           
           total_value = 0; // Start from 0
@@ -39,8 +37,6 @@ router.post('/addOrder', async (req, res) => {
         });
 
         const savedOrder = await newOrder.save();
-
-        
 
         if (orderDetails && orderDetails.length > 0) {
           const productDetails = await Promise.all(
@@ -317,32 +313,6 @@ router.get('/orderAndDetails/:id', async (req, res) => {
 });
 
 // Update the order status
-// router.put('/updateOrderStatus/:id', async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const {statusId,deliveryDate,adminRemarks} = req.body;
-//     const orderExist = await orderSchema.findOne({ _id: (id) })
-//     if (orderExist) {
-//       const result = await orderSchema.updateOne({ _id: (id) },{$set:{statusId, deliveryDate, adminRemarks}});
-//       if (result.modifiedCount === 0) {
-//         res.json({ statusCode: 404, message: "Order not found" });
-//       }
-//       else {
-//         res.json({ statusCode: 200, result: { message: "Order Status Updated !!" } });
-//       }
-//     }
-//     else {
-//       res.json({ statusCode: 404, message: "Order not found" });
-//     }
-//   }
-//   catch (err) {
-//     res.json({ statusCode: 400, message: err.message })
-//   }
-// });
-
-// ----------------------------------------------------------
-
-// Update the order status
 router.put('/updateOrderStatus/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -390,8 +360,6 @@ router.put('/updateOrderStatus/:id', async (req, res) => {
   }
 });
 
-// ----------------------------------------------------------
-
 // Status Changingggg
 router.put('/test/:id', async (req, res) => {
   try {
@@ -416,6 +384,7 @@ router.put('/test/:id', async (req, res) => {
   }
 });
 
+// Cancel Order 
 router.put('/cancelOrder/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -498,5 +467,152 @@ router.put('/acceptOrder/:id', async (req, res) => {
   }
 });
 
+// Status Counter for Dashboard
+router.get('/statusCount',async(req,res) =>{
+  try{
+    let orders = await orderSchema.find({isActive : true});
+    if(orders){
+      
+      let Ord_Accept = 0;
+      let Pack_num = 0;
+      let Transport_num = 0;
+      let Deliver_num = 0 ;
+      let New_order = 0;
+      let Cancel_Order = 0;
+
+      for(const element of orders){
+        if(element.statusId == "673626581da86f57e77d973c"){
+          New_order = New_order + 1;
+        }
+        else if(element.statusId == "673626631da86f57e77d973f"){
+          Ord_Accept = Ord_Accept + 1;
+        }
+        else if(element.statusId == "673626751da86f57e77d9742"){
+          Pack_num =Pack_num +1;
+        }
+        else if(element.statusId == "673626851da86f57e77d9745"){
+          Transport_num = Transport_num + 1;
+        }
+        else if(element.statusId == "673626901da86f57e77d9748"){
+          Deliver_num = Deliver_num + 1; 
+        }
+        else if(element.statusId == "67bf462e1cda1de741312dc3"){
+          Cancel_Order = Cancel_Order + 1;
+        }
+      } 
+
+      let temp = {
+        New_Orders : New_order,
+        Accepted_Orders  : Ord_Accept,
+        Packing_Orders : Pack_num,
+        Transportation_Orders : Transport_num,
+        Delivery_Orders : Deliver_num,
+        Cancelled_Orders : Cancel_Order
+      }
+
+      res.json({statusCode : 200, result : {message:"Successfully Fetched Status Order Count", statusCount : temp} })
+    }
+  }catch(err){
+    res.json({statusCode : 400, message : err.message})
+  }
+});
+
+// Delivery List for Dashboard
+router.get('/deliveryOrderDashboard', async (req, res) => {
+  try {
+    // Get today's date in YYYY-MM-DD format
+    let today = moment().format('YYYY-MM-DD');
+
+    // Find orders where expectedDeliveryDate matches today's date
+    let orders = await orderSchema.find({
+      isActive: true,
+      $or:[
+        { expectedDeliveryDate: { $gte: new Date(today + "T00:00:00.000Z"), $lt: new Date(today + "T23:59:59.999Z") } },
+        { deliveryDate: { $gte: new Date(today + "T00:00:00.000Z"), $lt: new Date(today + "T23:59:59.999Z") } }
+      ]
+      // deliveryDate: { 
+      //   $gte: new Date(today + "T00:00:00.000Z"), 
+      //   $lt: new Date(today + "T23:59:59.999Z") 
+      // },
+      // expectedDeliveryDate: { 
+      //   $gte: new Date(today + "T00:00:00.000Z"), 
+      //   $lt: new Date(today + "T23:59:59.999Z") 
+      // }
+    });
+
+    if (orders.length > 0) {
+      let newarr = [];
+
+      for (const element of orders) {
+        let customer = await customerSchema.findOne({ _id: element.customerId });
+        let status = await statusSchema.findOne({ _id: element.statusId });
+
+        let Order_date = moment(element.orderDate).format('DD-MM-YYYY');
+        let Del_date = moment(element.deliveryDate).format('DD-MM-YYYY');
+
+        let temp = {
+          _id: element._id,
+          customerId: element.customerId,
+          statusId: element.statusId,
+          paymentTypeId: element.paymentTypeId,
+          customerName: customer.name,
+          total: element.total,
+          orderDate: Order_date,
+          deliveryDate: Del_date,
+          isActive: element.isActive
+        };
+
+        newarr.push(temp);
+      }
+
+      res.json({ statusCode: 200, message: "Success", result: { orders: newarr } });
+    } else {
+      res.json({ statusCode: 404, message: "No orders found for today's delivery" });
+    }
+  } catch (err) {
+    res.json({ statusCode: 400, message: err.message });
+  }
+});
+
+// Latest Order for Dashboard
+router.get('/latestOrdersForDashboard', async (req, res) => {
+  try {
+    let orders = await orderSchema.find({isActive : true}).sort({_id:-1}).limit(2);
+    if (orders) {
+          let newarr = [];
+          for (const element of orders) {
+          //   console.log("Inside FOR Loop");
+            let customer = await customerSchema.findOne({ _id: element.customerId });
+            let status = await statusSchema.findOne({ _id: element.statusId });
+            let payment = await paymentSchema.findOne({_id: element.paymentTypeId});
+
+            let Order_date = moment(element.orderDate).format('DD-MM-YYYY');
+            let Del_date = moment(element.deliveryDate).format('DD-MM-YYYY');
+
+            let temp = {
+              _id: element._id,
+              customerId : element.customerId,
+              statusId : element.statusId,
+              paymentTypeId : element.paymentTypeId,
+              customerName: customer.name,
+              paymentName: payment.paymentName,
+              total : element.total,
+              orderDate : Order_date,
+              isActive: element.isActive
+            }
+            newarr.push(temp);
+            console.log(temp);
+          }
+          console.log(newarr);
+          res.json({ statusCode: 200, message:"success", result: { orders: newarr } });
+        }
+    else {
+      res.json({ statusCode: 404, message: "Orders not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
 
 module.exports = router;

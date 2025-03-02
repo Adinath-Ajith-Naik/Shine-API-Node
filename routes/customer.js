@@ -192,5 +192,49 @@ router.get('/deleteCustomer/:id', async (req, res) => {
       res.json({ statusCode: 400, message: err.message })
     }
 });
+
+// Latest Customer List
+
+router.get('/newCustomerList', async (req, res) => {
+  try {
+    let customers = await customerSchema.find({isActive : true}).sort({_id : -1}).limit(3);
+    if (customers) {
+          let newarr = [];
+          for (const element of customers) {
+            let country = await countrySchema.findOne({ _id: element.countryId });
+            let state = await stateSchema.findOne({ _id: element.stateId });
+            let district = await districtSchema.findOne({_id: element.districtId});
+            let temp = {
+              _id: element._id,
+              countryId : element.countryId,
+              stateId : element.stateId,
+              districtId : element.districtId,
+              districtName: district.districtName,
+              stateName: state.stateName,
+              countryName: country.countryName,
+              name : element.name,
+              email : element.email,
+              mobileNo : element.mobileNo,
+              address : element.address,
+              pincode : element.pincode,
+              isActive: element.isActive
+            }
+            newarr.push(temp);
+            console.log("-----------------------------")
+            console.log(temp);
+          }
+          console.log("Hiiiiii")
+          console.log(newarr);
+          res.json({ statusCode: 200, message:"success", result: { customers: newarr } });
+        }
+    else {
+      res.json({ statusCode: 404, message: "Customers not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
     
 module.exports = router;
