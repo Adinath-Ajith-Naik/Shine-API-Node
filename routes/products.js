@@ -178,8 +178,8 @@ router.put('/updateProduct/:id', async (req, res) => {
       const { productName, price, weight, description, categoryId, subCategoryId, companyId, photoUrl1, photoUrl2} = req.body;
       // const photoUrl = req.body.logoUrl;
       let new_image;
-      const companyExist = await companySchema.findOne({ _id: (id) })
-      if (companyExist) {
+      const productExist = await productSchema.findOne({ _id: (id) })
+      if (productExist) {
   
         let savedPhoto1 = null;
         if (photoUrl1) {
@@ -217,7 +217,7 @@ router.put('/updateProduct/:id', async (req, res) => {
 
         const result = await productSchema.updateMany({ _id: (id) }, { $set: {productName: productName, price: price, weight:weight, description: description, categoryId: categoryId, subCategoryId: subCategoryId, companyId: companyId, photoUrl1: savedPhoto1, photoUrl2: savedPhoto2}});
         if (result.modifiedCount === 0) {
-          res.json({ statusCode: 404, message: "Product not found" });
+          res.json({ statusCode: 404, message: "Product not found 132" });
         }
         else {
           res.json({ statusCode: 200, result: { message: "Product Details Updated" } });
