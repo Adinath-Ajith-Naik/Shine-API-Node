@@ -615,4 +615,50 @@ router.get('/latestOrdersForDashboard', async (req, res) => {
   }
 });
 
+// Get Order By Customer Id
+router.get('/orderByCustomerId/:customerId', async (req, res) => {
+  try {
+      const { customerId } = req.params;
+      let orders = await orderSchema.find({ customerId: (customerId) })
+      if (orders) {
+        let newarr = [];
+        for (const element of orders) {
+        //   console.log("Inside FOR Loop");
+          let customer = await customerSchema.findOne({ _id: element.customerId });
+          let status = await statusSchema.findOne({ _id: element.statusId });
+          let payment = await paymentSchema.findOne({_id: element.paymentTypeId});
+
+          let Order_date = moment(element.orderDate).format('DD-MM-YYYY');
+          let Del_date = moment(element.deliveryDate).format('DD-MM-YYYY');
+
+          let temp = {
+            _id: element._id,
+            customerId : element.customerId,
+            statusId : element.statusId,
+            paymentTypeId : element.paymentTypeId,
+            customerName: customer.name,
+            statusName: status.statusName,
+            paymentName: payment.paymentName,
+            total : element.total,
+            customerRemarks : element.customerRemarks,
+            adminRemarks : element.adminRemarks,
+            orderDate : Order_date,
+            deliveryDate :Del_date ,
+            isActive: element.isActive
+          }
+          newarr.push(temp);
+          console.log(temp);
+        }
+        console.log(newarr);
+        res.json({ statusCode: 200, message:"success", result: { orders: newarr } });
+      }
+  else {
+    res.json({ statusCode: 404, message: "Orders not found" });
+  }
+}
+catch (err) {
+  res.json({ statusCode: 400, message: err.message })
+}
+});
+
 module.exports = router;

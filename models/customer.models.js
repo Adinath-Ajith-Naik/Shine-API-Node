@@ -8,7 +8,7 @@ const schema={
     pincode : String, 
     countryId : String,
     stateId : String, 
-    districtId : String, 
+    districtId : String,  
     isActive : Boolean,
 };
 
