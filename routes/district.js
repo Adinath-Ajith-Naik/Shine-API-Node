@@ -179,5 +179,67 @@ router.get('/district/getByState/:stateId', async (req, res, next) => {
     res.json({ statusCode: 400, message: err.message })
   }
 });
+
+router.get('/paginatedDistricts', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const stateFilter = req.query.state || 'all';
+    
+    // Build filter conditions
+    let filterCondition = { isActive: true };
+    if (stateFilter !== 'all') {
+      // Find the statusId by statusName
+      const state = await stateSchema.findOne({ stateName: stateFilter });
+      if (state) {
+        filterCondition.stateId = state._id;
+      }
+    }
+    
+    // Get total count for pagination metadata
+    const totalDistricts = await districtSchema.countDocuments(filterCondition);
+    
+    // Get orders with pagination
+    let districts = await districtSchema.find(filterCondition).skip(skip).limit(limit);
+    
+    if (districts && districts.length > 0) {
+      let newarr = [];
+      for (const element of districts) {
+        let country = await countrySchema.findOne({ _id: element.countryId });
+        let state = await stateSchema.findOne({ _id: element.stateId });
+        let temp = {
+          _id: element._id,
+          countryId : element.countryId,
+          stateId : element.stateId,
+          districtName: element.districtName,
+          stateName: state.stateName,
+          countryName: country.countryName,
+          isActive: element.isActive
+        }
+        newarr.push(temp);
+      }
+      
+      res.json({ 
+        statusCode: 200, 
+        message: "success", 
+        result: { 
+          districts: newarr,
+          pagination: {
+            totalDistricts,
+            totalPages: Math.ceil(totalDistricts / limit),
+            currentPage: page,
+            limit
+          }
+        } 
+      });
+    } else {
+      res.json({ statusCode: 404, message: "Districts not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
   
 module.exports = router;

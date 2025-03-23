@@ -661,4 +661,78 @@ catch (err) {
 }
 });
 
+// Paginated Orders
+router.get('/paginatedOrders', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const statusFilter = req.query.status || 'all';
+    
+    // Build filter conditions
+    let filterCondition = { isActive: true };
+    if (statusFilter !== 'all') {
+      // Find the statusId by statusName
+      const status = await statusSchema.findOne({ statusName: statusFilter });
+      if (status) {
+        filterCondition.statusId = status._id;
+      }
+    }
+    
+    // Get total count for pagination metadata
+    const totalOrders = await orderSchema.countDocuments(filterCondition);
+    
+    // Get orders with pagination
+    let orders = await orderSchema.find(filterCondition).sort({ orderDate: -1 }).skip(skip).limit(limit);
+    
+    if (orders && orders.length > 0) {
+      let newarr = [];
+      for (const element of orders) {
+        let customer = await customerSchema.findOne({ _id: element.customerId });
+        let status = await statusSchema.findOne({ _id: element.statusId });
+        let payment = await paymentSchema.findOne({_id: element.paymentTypeId});
+
+        let Order_date = moment(element.orderDate).format('DD-MM-YYYY');
+        let Del_date = moment(element.deliveryDate).format('DD-MM-YYYY');
+
+        let temp = {
+          _id: element._id,
+          customerId: element.customerId,
+          statusId: element.statusId,
+          paymentTypeId: element.paymentTypeId,
+          customerName: customer.name,
+          statusName: status.statusName,
+          paymentName: payment.paymentName,
+          total: element.total,
+          customerRemarks: element.customerRemarks,
+          adminRemarks: element.adminRemarks,
+          orderDate: Order_date,
+          deliveryDate: Del_date,
+          isActive: element.isActive
+        }
+        newarr.push(temp);
+      }
+      
+      res.json({ 
+        statusCode: 200, 
+        message: "success", 
+        result: { 
+          orders: newarr,
+          pagination: {
+            totalOrders,
+            totalPages: Math.ceil(totalOrders / limit),
+            currentPage: page,
+            limit
+          }
+        } 
+      });
+    } else {
+      res.json({ statusCode: 404, message: "Orders not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
 module.exports = router;
