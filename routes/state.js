@@ -150,4 +150,63 @@ router.get('/state/getByCountry/:countryId', async (req, res, next) => {
   }
 })
 
+router.get('/paginatedStates', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const countryFilter = req.query.country || 'all';
+    
+    // Build filter conditions
+    let filterCondition = { isActive: true };
+    if (countryFilter !== 'all') {
+      // Find the statusId by statusName
+      const country = await countrySchema.findOne({ countryName: countryFilter });
+      if (country) {
+        filterCondition.countryId = country._id;
+      }
+    }
+    
+    // Get total count for pagination metadata
+    const totalStates = await stateSchema.countDocuments(filterCondition);
+    
+    // Get orders with pagination
+    let states = await stateSchema.find(filterCondition).skip(skip).limit(limit);
+    
+    if (states && states.length > 0) {
+      let newarr = [];
+      for (const element of states) {
+        let country = await countrySchema.findOne({ _id: element.countryId });
+        let temp = {
+          _id: element._id,
+          countryId : element.countryId,
+          stateName: element.stateName,
+          countryName: country.countryName,
+          isActive:element.isActive
+        }
+        newarr.push(temp);
+      }
+      
+      res.json({ 
+        statusCode: 200, 
+        message: "success", 
+        result: { 
+          states: newarr,
+          pagination: {
+            totalStates,
+            totalPages: Math.ceil(totalStates / limit),
+            currentPage: page,
+            limit
+          }
+        } 
+      });
+    } else {
+      res.json({ statusCode: 404, message: "States not found" });
+    }
+  }
+  catch (err) {
+    res.json({ statusCode: 400, message: err.message })
+  }
+});
+
 module.exports = router;
