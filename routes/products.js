@@ -257,4 +257,110 @@ router.put('/deleteProduct/:id', async (req, res) => {
     }
 });
 
+router.get('/paginatedProducts', async (req, res) => {
+  try {
+      // Pagination parameters
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      // Filtering parameters
+      const nameFilter = req.query.name || '';
+      const priceFilter = req.query.price || '';
+      const categoryFilter = req.query.category || '';
+      const subCategoryFilter = req.query.subCategory || '';
+
+      // Build filter query
+      let filterQuery = { isActive: true };
+
+      if (nameFilter) {
+          filterQuery.productName = { $regex: nameFilter, $options: 'i' };
+      }
+
+      if (priceFilter) {
+          // Change: Use exact price matching
+          filterQuery.price = parseFloat(priceFilter);
+      }
+
+      // If category or subcategory filters are provided, we'll need to do a lookup
+      let categoryIds = [];
+      let subCategoryIds = [];
+
+      if (categoryFilter) {
+          const categories = await categorySchema.find({ 
+              categoryName: { $regex: categoryFilter, $options: 'i' } 
+          });
+          categoryIds = categories.map(cat => cat._id);
+          filterQuery.categoryId = { $in: categoryIds };
+      }
+
+      if (subCategoryFilter) {
+          const subCategories = await subCategorySchema.find({ 
+              subCategoryName: { $regex: subCategoryFilter, $options: 'i' } 
+          });
+          subCategoryIds = subCategories.map(subCat => subCat._id);
+          filterQuery.subCategoryId = { $in: subCategoryIds };
+      }
+
+      // Get total count for pagination
+      const totalProducts = await productSchema.countDocuments(filterQuery);
+
+      // Fetch paginated products
+      let products = await productSchema
+          .find(filterQuery)
+          .skip(skip)
+          .limit(limit);
+
+      // Enrich product data with category, subcategory, and company details
+      if (products && products.length > 0) {
+        let newarr = [];
+        for (const element of products) {
+            let category = await categorySchema.findOne({ _id: element.categoryId });
+            let subCategory = await subCategorySchema.findOne({ _id: element.subCategoryId });
+            let company = await companySchema.findOne({_id: element.companyId});
+            
+            let temp = {
+                _id: element._id,
+                categoryId: element.categoryId,
+                subCategoryId: element.subCategoryId,
+                companyId: element.companyId,
+                categoryName: category ? category.categoryName : 'N/A',
+                subCategoryName: subCategory ? subCategory.subCategoryName : 'N/A',
+                companyName: company ? company.name : 'N/A',
+                productName: element.productName,
+                price: element.price,
+                description: element.description,
+                weight: element.weight,
+                photoUrl1: element.photoUrl1,
+                photoUrl2: element.photoUrl2,
+                isActive: element.isActive
+            }
+            newarr.push(temp);
+        }
+  
+      }
+      
+      // Calculate total pages
+      const totalPages = Math.ceil(totalProducts / limit);
+
+      res.json({ 
+          statusCode: 200, 
+          message: "success", 
+          result: { 
+              products: newarr,
+              pagination: {
+                totalProducts, 
+                  currentPage: page,
+                  totalPages: totalPages,
+                  totalProducts: totalProducts,
+                  pageSize: limit
+              }
+          } 
+      });
+  }
+  catch (err) {
+      res.json({ statusCode: 400, message: err.message })
+  }
+});
+
 module.exports = router;
