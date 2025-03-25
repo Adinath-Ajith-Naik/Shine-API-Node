@@ -312,8 +312,9 @@ router.get('/paginatedProducts', async (req, res) => {
           .limit(limit);
 
       // Enrich product data with category, subcategory, and company details
-      if (products && products.length > 0) {
+
         let newarr = [];
+      if (products && products.length > 0) {
         for (const element of products) {
             let category = await categorySchema.findOne({ _id: element.categoryId });
             let subCategory = await subCategorySchema.findOne({ _id: element.subCategoryId });
