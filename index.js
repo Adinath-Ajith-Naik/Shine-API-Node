@@ -7,7 +7,9 @@ let port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
 
 const server = http.createServer(app);
-server.listen(port);
+// server.listen(port);
+server.listen(port, '0.0.0.0');
+
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -52,3 +54,12 @@ function onListening() {
     : 'port ' + addr.port;
   ('Listening on ' + bind);
 }
+
+// var admin = require("firebase-admin");
+
+// var serviceAccount = require("path/to/serviceAccountKey.json");
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   databaseURL: "https://shinepharma-app-default-rtdb.firebaseio.com"
+// });
