@@ -150,7 +150,7 @@ router.get('/productById/:id', async (req, res) => {
           companyId : product.companyId,
           categoryName: category.categoryName,
           subCategoryName: subCategory.subCategoryName,
-          companyName: company.companyName,
+          companyName: company.name,
           name : product.productName,
           price : product.price,
           description : product.description,
@@ -170,7 +170,48 @@ router.get('/productById/:id', async (req, res) => {
       res.json({ statusCode: 400, message: err.message })
     }
 });
-  
+
+// Get Product by Category and Sub Category
+router.get('/productByCategorySubCategory/:categoryId/:subCategoryId', async (req, res) => {
+  try {
+    const { categoryId, subCategoryId } = req.params;
+
+    const products = await productSchema.find({ categoryId, subCategoryId });
+
+    if (!products.length) {
+      return res.json({ statusCode: 404, message: "No products found" });
+    }
+
+    const enrichedProducts = await Promise.all(products.map(async (product) => {
+      const category = await categorySchema.findById(product.categoryId);
+      const subCategory = await subCategorySchema.findById(product.subCategoryId);
+      const company = await companySchema.findById(product.companyId);
+
+      return {
+        _id: product._id,
+        categoryId: product.categoryId,
+        subCategoryId: product.subCategoryId,
+        companyId: product.companyId,
+        categoryName: category?.categoryName || null,
+        subCategoryName: subCategory?.subCategoryName || null,
+        companyName: company?.name || null,
+        name: product.productName,
+        price: product.price,
+        description: product.description,
+        weight: product.weight,
+        photoUrl1: product.photoUrl1,
+        photoUrl2: product.photoUrl2,
+        isActive: product.isActive
+      };
+    }));
+
+    res.json({ statusCode: 200, result: enrichedProducts });
+
+  } catch (err) {
+    res.json({ statusCode: 400, message: err.message });
+  }
+});
+
 // Update a company by ID
 router.put('/updateProduct/:id', async (req, res) => {
     try {
