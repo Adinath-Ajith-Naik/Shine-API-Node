@@ -181,6 +181,74 @@ router.put('/deleteCategory/:id', async (req, res) => {
   }
 });
 
+router.get('/paginatedCategories', async (req, res) => {
+  try {
+      // Pagination parameters
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      // Filtering parameters
+      const nameFilter = req.query.name || '';
+  
+      // Build filter query
+      let filterQuery = { isActive: true };
+
+      if (nameFilter) {
+          filterQuery.categoryName = { $regex: nameFilter, $options: 'i' };
+      }
+    
+
+      // Get total count for pagination
+      const totalCategories = await categorySchema.countDocuments(filterQuery);
+
+      // Fetch paginated products
+      let categories = await categorySchema
+          .find(filterQuery)
+          .skip(skip)
+          .limit(limit);
+
+      // Enrich product data with category, subcategory, and company details
+
+        let newarr = [];
+      if (categories && categories.length > 0) {
+        for (const element of categories) {
+            
+            
+            let temp = {
+                _id: element._id,
+                categoryName: element.categoryName,
+                photoUrl: element.photoUrl,
+                isActive: element.isActive
+            }
+            newarr.push(temp);
+        }
+  
+      }
+      
+      // Calculate total pages
+      const totalPages = Math.ceil(totalCategories / limit);
+
+      res.json({ 
+          statusCode: 200, 
+          message: "success", 
+          result: { 
+              categories: newarr,
+              pagination: {
+                totalCategories, 
+                  currentPage: page,
+                  totalPages: totalPages,
+                  totalCategories: totalCategories,
+                  pageSize: limit
+              }
+          } 
+      });
+  }
+  catch (err) {
+      res.json({ statusCode: 400, message: err.message })
+  }
+});
+
 
 
 // Create Category (old Method)
