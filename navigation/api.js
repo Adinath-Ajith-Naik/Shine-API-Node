@@ -17,7 +17,7 @@ const paymentRouter = require('../routes/payment');
 const imgRouter = require('../image');
 const productRouter = require('../routes/products');
 const orderRouter = require('../routes/order');
-const testRouter = require('./routes/test');
+
 
 const app = express();
 // app.use(cors({
@@ -46,7 +46,7 @@ app.use('/apiV1',paymentRouter);
 app.use('/apiv1', imgRouter);
 app.use('/apiV1',productRouter);
 app.use('/apiV1',orderRouter);
-app.use('/apiV1', testRouter);
+
 
 
 
