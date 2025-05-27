@@ -5,6 +5,8 @@ dotenv.config();
 
 let port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
+// app.use(express.static('public'))
+
 
 const server = http.createServer(app);
 // server.listen(port);

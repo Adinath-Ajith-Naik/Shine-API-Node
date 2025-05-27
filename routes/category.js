@@ -20,7 +20,7 @@ router.post('/addCategory', async (req, res) => {
     let savedPhotoUrl = null;
     if (photoUrl) {
       const newId = uuidv4();
-      const path = `Images\\Category\\${newId}.jpg`;
+      const path = `public\\image\\${newId}.jpg`;
       const base64Image = photoUrl.split(';base64,').pop();
       const binaryData = Buffer.from(base64Image, 'base64');
 

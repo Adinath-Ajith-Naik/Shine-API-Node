@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const expressSanitizer = require('express-sanitizer');
 
+
 const bodyParser = require('body-parser');
 
 const countryRouter = require('../routes/country');
@@ -25,6 +26,8 @@ const app = express();
 // }));
 
 app.use(cors());
+app.use(express.static('public'))
+app.use(express.static(__dirname + '/image/'));
 
 app.use(bodyParser.json({ limit: '50mb' })); // Adjust the limit as needed
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
