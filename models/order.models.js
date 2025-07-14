@@ -14,7 +14,7 @@ const schema = {
     packingDate : Date,
     transportDate : Date,
     isActive : Boolean,
-    orderNumber : String, 
+    invoiceNumber : String, 
 
   };
   
